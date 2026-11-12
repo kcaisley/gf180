@@ -1,13 +1,14 @@
-"""GF180MCU (gf180mcuD, 5 V core) values for the row cells (flow/layout/rows), all in nm.
+"""GF180MCU (gf180mcuD, 3.3 V core) values for the row cells (flow/layout/rows), all in nm.
 
 The generic cells import this module as ``tech``, so this directory goes on the path ahead of
 theirs. Rule values are the open PDK's (its KLayout DRC deck, libs.tech/klayout/tech/drc, the
-gf180mcu DRM's rule names in the comments; the _MV values, the 5 V devices'); row positions follow
-the gf180mcu_fd_sc_mcu7t5v0 library (3.92 um, 7 tracks of 0.56 um, 0.56 um sites, VSS on even
-rail lines). The library's rails carry no diffusion: the N+ and P+ implants continue over them
-(N+ at VSS, P+ at VDD) and the wells are tied by its filltie cell, which every row end gets
-(EDGE_TIE). Its devices are the 5 V pair under Dualgate and V5_XTOR (nfet_05v0, pfet_05v0), which
-the row cells draw too: both markers over every cell (VT_MARKS), no VT layer.
+gf180mcu DRM's rule names in the comments; the _LV values, the 3.3 V devices'); row positions
+follow the gf180mcu_osu_sc_gp9t3v3 library (Oklahoma State's: 6.3 um, nine 0.7 um tracks in its
+LEF, its pins on a 0.6 um grid; ten 0.63 um M2 tracks here, cell widths on a 0.1 um grid padded to
+0.6 um, VSS on even rail lines). The library's rails lie
+inside its cells (M1 0 to 0.6 um from either edge), so where two rows meet the rail is 1.2 um wide,
+centred on the line, as the row cells draw it (RAIL); a tap sits under each, P+ under VSS, N+ under
+VDD, in every cell (RAIL_OD, RAIL_TAPS). No VT layer, no Dualgate: the 3.3 V devices.
 """
 
 # ---- layers (GDS layer, datatype)
@@ -25,13 +26,12 @@ LAYERS = {
     "NP": (32, 0),  # Nplus
     "VTN": None,
     "VTP": None,
-    "DUALGATE": (55, 0),  # thick (5/6 V) gate oxide
+    "DUALGATE": (55, 0),  # thick (5/6 V) gate oxide: the I/O devices', not drawn by the rows
     "V5_XTOR": (112, 1),  # marks a Dualgate device as 5 V (nfet_05v0, pfet_05v0)
-    "LVPWELL": (204, 0),  # the library cells' P-well under their NMOS half (not drawn by the rows)
     "DNW": (12, 0),  # DNWELL
     "SAB": (49, 0),  # salicide block
     "RES_MK": (110, 5),  # resistor marker
-    "BND": (0, 0),  # PR_bndry, as the standard cells
+    "BND": (0, 0),  # PR_bndry (the kit's copy of the library adds it to its cells: openroad/views.py)
     "V3": (40, 0),
     "M4": (46, 0),
     "V4": (41, 0),
@@ -41,10 +41,12 @@ LAYERS = {
     **{f"M{n}.PIN": (m, 10) for n, m in enumerate((34, 36, 42, 46, 81), 1)},
 }
 PIN_TEXT = {m: LAYERS[f"{m}.PIN"] for m in ("M1", "M2", "M3")}  # pin labels of the row cells
-MODELS = {"n": "nfet_05v0", "p": "pfet_05v0"}  # LVS (and simulation) device names of the row transistors
+# the netlists' names (pdk.gf180.hdl21: the decks' nfet_03v3 / pfet_03v3 wrapped, which Spectre cannot
+# call by name); the LVS source names them as the deck does (netlist/lvs.py)
+MODELS = {"n": "nfet_3v3", "p": "pfet_3v3"}
 MODEL_PREFIXES = {"n": ("nfet",), "p": ("pfet",)}  # MOS model families, for the schematic tools
-DNW_MODELS = {"nfet_05v0": "nfet_05v0_dn"}  # NMOS over a deep N-well, as the LVS deck extracts it
-STD_LIB = "gf180mcu_fd_sc_mcu7t5v0"  # the standard-cell library
+DNW_MODELS = {"nfet_03v3": "nfet_03v3_dn"}  # NMOS over a deep N-well, as the LVS deck extracts it
+STD_LIB = "gf180mcu_osu_sc_gp9t3v3"  # the standard-cell library
 STD_DRIVE = r"_(\d+)$"  # a cell name's drive strength (flow.circuit.cellmap)
 MFG_GRID = 5  # manufacturing grid
 DBU = 0.001  # um per database unit (1 nm)
@@ -65,77 +67,77 @@ RULES = {
         f"M{n}": {"width": 280, "space": 280, "pitch": 560, "area": 144_400, "enclosed_area": 1_000_000}
         for n in range(2, 5)
     },  # Mn.1, Mn.2a, Mn.3
-    # the top metal: MT.1 0.44, MT.2a 0.46 (MT.4 the area), its space taken at 0.68 so a MOM unit
-    # with fingers on it (MOM_LAYERS) abuts on the rows' 0.56 um grid (pitch 1.12), as ALIGN places it
-    "M5": {"width": 440, "space": 680, "pitch": 1120, "area": 562_500},
+    # the top metal (MT.1, MT.2a, MT.4): a MOM unit with fingers on it (MOM_LAYERS) is 2 x 0.9 um
+    # wide, on the rows' 0.6 um grid (XPITCH), as ALIGN places it
+    "M5": {"width": 440, "space": 460, "pitch": 900, "area": 562_500},
     # the poly resistor's cell keeps half this space between its poly and the cell edge (rescell):
     # its Pplus, 0.3 past the poly (PRES.5), then stays 0.4 from a neighbour's (PP.2), its poly 0.6
     # from a neighbour's COMP and poly (PRES.3, PRES.4); PL.3a is 0.24
     "PO": {"width": 200, "space": 1400},
 }
-NW_SPACE = 740  # NW.2a_MV: N-well space, narrower gaps are closed
+NW_SPACE = 600  # NW.2a_LV: N-well space, narrower gaps are closed
 
 # ---- the standard-cell row
-H = 3920  # row height; rails at 0 (VSS) and H (VDD)
-PITCH = 560  # M2 track pitch (y), tracks on multiples of it
-XPITCH = 560  # M3 track pitch and cell width grid (x): the library's site width
-RAIL = 300  # M1 rail half width (600 nm, as the std cells)
-TAP_OD = 110  # (no rail diffusion: RAIL_OD)
-TAP_PITCH = 560
-RAIL_OD = False  # no diffusion under the rails, as the library
-RAIL_TAPS = False  # and no taps: filltie cells tie the wells
-LVS_BUTTED_TAPS = False  # so no source reaches a tap through the silicide (flow.layout.klayout_lvs)
-RAIL_IMPLANTS = ("NP", "PP")  # the implants continue over the rails as the library's: N+ at VSS, P+ at VDD
-PP_TAP = 200  # VSS rail implant band half height (the library's Nplus reaches 0.2 past the rail)
-NP_TAP = 3720  # VDD rail implant band bottom (top 2 H - NP_TAP)
-# device implants from one rail band to the other: N+ over an NMOS cell, P+ over a PMOS cell; they
-# enclose the gates by 0.23 (NP.5a, PP.5a) and the diffusion by 0.16 (NP.5b, PP.5b)
+H = 6300  # row height; rails at 0 (VSS) and H (VDD)
+# M2 track pitch (y), tracks on multiples of it: ten to a row, so the library's pin pads (on its
+# 0.6 um grid, 2.55, 3.15, 3.75 um) each hold a track (2.52, 3.15, 3.78 um); at 0.7 um none does
+PITCH = 630
+XPITCH = 600  # M3 track pitch and cell width grid (x): two of the library's 0.3 um fillers
+RAIL = 600  # M1 rail half width: the library's 0.6 um rail inside each of the two rows that meet
+TAP_OD = 225  # rail tap diffusion half height (the library's tap is 0.45 um under its rail)
+TAP_PITCH = 600  # tap contacts at x = TAP_PITCH / 2 + k * TAP_PITCH
+# the rail implant bands as the library's (its cells' full-width bands, which the kit's copy completes,
+# openroad/views.py): Pplus 0.6 about VSS, Nplus from 0.6 below VDD; deeper, a row cell's band would
+# cover the library's Pplus islands at its PMOS gates across the rail (NP.12)
+PP_TAP = 600  # VSS rail implant band half height (Pplus; 0.375 past the tap: PP.5b)
+NP_TAP = 5700  # VDD rail implant band bottom (Nplus; top 2 H - NP_TAP)
+# device implants from one rail band to the other: Nplus over an NMOS cell, Pplus over a PMOS cell;
+# they enclose the gates by 0.23 (NP.5a, PP.5a) and the diffusion by 0.16 (NP.5b, PP.5b)
 DEV_IMP = {"n": (PP_TAP, NP_TAP), "p": (PP_TAP, NP_TAP)}
-# well: VDD band bottom (NMOS cells: 0.6 above their N+ COMP, DF.16_MV; 0.86 tall alone, NW.1a),
-# PMOS body bottom (0.6 below its P+ COMP, DF.4c_MV), top (the library's, 0.43 past the VDD rail)
-NW_N, NW_P, NW_TOP = 3200, 1000, 4350
-VT_BAND = (-280, 4200)  # Dualgate and V5_XTOR over the cell, Dualgate 0.28 past the rails as the library's
-VT_MARKS = {"n": ("DUALGATE", "V5_XTOR"), "p": ("DUALGATE", "V5_XTOR")}  # the 5 V devices' markers
-STD_NW = 1760  # library cells: Nplus (and LVPWELL) below, Pplus and well from here
-IMP_OH, NW_OH = 200, 430  # overhang of the rail implant bands and the VDD well band past a cell, as the library
-EDGE_TIE = ("gf180mcu_fd_sc_mcu7t5v0__filltie", 1120)  # tie cell at every row end, and its width
-EDGE_W = 1680  # row end cell: the tie cell and one site of padding (its well and LVPWELL overhang 0.43)
+# well: VDD band bottom (NMOS cells: 0.43 above their N+ COMP, DF.16_LV), PMOS body bottom (0.43
+# below its P+ COMP, DF.4c_LV), top (0.12 past the VDD tap, DF.4d_LV, into the next row)
+NW_N, NW_P, NW_TOP = 3930, 2370, 6730
+VT_BAND = (0, H)  # no VT layer drawn
+STD_NW = 3200  # library cells: Nplus below (but for the VDD tap), Pplus and well from here
+IMP_OH, NW_OH = 200, 430  # overhang of the rail implant bands and the VDD well band past a cell (PP.5b, DF.4d_LV)
 
 # ---- the standard cells next to the rows (stdcell_access.py, netcells.py)
 STD_CELLS = (
-    "gf180mcu_fd_sc_mcu7t5v0__inv_1",
-    "gf180mcu_fd_sc_mcu7t5v0__inv_4",
-    "gf180mcu_fd_sc_mcu7t5v0__inv_8",
-    "gf180mcu_fd_sc_mcu7t5v0__nor2_2",
-    "gf180mcu_fd_sc_mcu7t5v0__nand2_1",
-    "gf180mcu_fd_sc_mcu7t5v0__fill_1",
-    "gf180mcu_fd_sc_mcu7t5v0__filltie",
+    "gf180mcu_osu_sc_gp9t3v3__inv_1",
+    "gf180mcu_osu_sc_gp9t3v3__inv_4",
+    "gf180mcu_osu_sc_gp9t3v3__inv_8",
+    "gf180mcu_osu_sc_gp9t3v3__nor2_1",
+    "gf180mcu_osu_sc_gp9t3v3__nand2_1",
+    "gf180mcu_osu_sc_gp9t3v3__fill_1",
 )
-STD_SUPPLY = ("VDD", "VSS")  # supply pin names, VDD rail on top (the wells VNW, VPW on them: openroad/views.py)
-STD_FILL, STD_FILL_W = "gf180mcu_fd_sc_mcu7t5v0__fill_1", 560  # one-site filler
-STD_TEXT_LAYERS: set[int] = set()  # labels sit on the metal layers' label datatype: netcells drops all text
-# pin access tracks, preferred first (middle of the cell): the library's horizontal pins sit on its
-# own tracks, half a pitch off the rows' M2 tracks (PIN_PITCH), so both are tried; bars there keep
-# M2.2a to the next track's
-STD_TRACKS = (1960, 1680, 2240, 1400, 2520, 1120, 2800, 840, 3080, 560, 3360)
-PIN_PITCH = 280
+STD_SUPPLY = ("VDD", "VSS")  # supply pin names, VDD rail on top
+STD_FILL, STD_FILL_W = "gf180mcu_osu_sc_gp9t3v3__fill_1", 300  # the narrowest filler
+STD_FILLS = tuple((f"gf180mcu_osu_sc_gp9t3v3__fill_{n}", 300 * n) for n in (1, 2, 4, 8, 16))
+STD_PAD = 600  # cells padded to a multiple of the placement grid (their widths are 0.1 um multiples)
+STD_TEXT_LAYERS: set[int] = set()  # the library's labels (on COMP and Metal2_Label): netcells drops all text
+# pin access tracks, preferred first (middle of the cell): the library's pins are M2 pads, each a
+# direct access on its track; the kit's copy trims the pads to the M2 space from the tracks beside
+# them (openroad/views.py), so a router's wire on any track keeps clear of them
+STD_TRACKS = (3150, 2520, 3780, 1890, 4410, 1260, 5040)
 STD_WIDE = None  # one via on any plate
-ISO_PAD = 430  # isolated std cells: pad on both sides, the library cell's well and LVPWELL overhang
+M2_PLATE = 1000  # library M2 this wide both ways is a plate: the cells' pin pads (0.5 x 0.4 um) are none
+ISO_PAD = 430  # isolated std cells: pad on both sides (a row cell's well 0.43 from their N+ COMP, DF.16_LV)
 EDGE_CUTS, EDGE_PAD = 1, (260, 140)  # row-end supply stack: one via per rail, M2 pad 520 x 280 (M2.3)
 
 # ---- device placement in the row
-GATE_TRACK = {"n": 2800, "p": 1120}  # gate bar and its M2 track
+GATE_TRACK = {"n": 3780, "p": 2520}  # gate bar and its M2 track (symmetric about the row's middle)
 # S/D tracks: a strip's M1 keeps M1.2a to the rail and to the gate pads
-SD_TRACKS = {"n": (1120, 1680, 2240), "p": (2800, 2240, 1680)}
-# NMOS: its first contact's M1 0.23 from the rail (M1.2a); the poly bar 0.3 from the diffusion
-# (PL.5a_MV) below the gate track; PMOS mirrored. Mirrored rows keep their poly 0.24 apart (PL.3a)
-OD_LIMIT = {"n": (520, 2320), "p": (1600, 3400)}  # (OD start at the rail side, furthest OD edge)
-# the complementary row cells' diffusion bands (rowcell.inverter), the library inverters' facing
-# edges: the NMOS's (lowest bottom, top), the PMOS's (bottom, highest top)
-LOGIC_OD = {"n": (520, 1160), "p": (2360, 3400)}  # their outer edges as the analog cells' (M1.2a to the rails)
-W_MAX = 1800  # widest finger
-EDGE = 600  # OD to the cell edge: DF.4c_MV / DF.16_MV against any neighbour's well
-OD_GAP = 360  # diffusion break between a pair's devices that share no strip (DF.3a_MV)
+SD_TRACKS = {"n": (1260, 1890, 2520, 3150), "p": (3150, 3780, 4410, 5040)}
+# NMOS: 0.23 inside its Nplus (NP.5a) above the VSS band, its first contact's M1 0.23 from the rail
+# (M1.2a); the poly bar 0.1 from the diffusion (PL.5a_LV), the gate contact 0.17 (CO.8), below the
+# gate track; PMOS: 0.23 inside its Pplus below the VDD band (PP.5a), mirrored about the gate track
+OD_LIMIT = {"n": (850, 3500), "p": (2800, 5310)}  # (OD start at the rail side, furthest OD edge)
+# the complementary row cells' diffusion bands (rowcell.inverter), split at the library's well
+# (STD_NW, 0.43 each way): the NMOS's (lowest bottom, top), the PMOS's (bottom, highest top)
+LOGIC_OD = {"n": (850, 2770), "p": (3630, 5310)}
+W_MAX = 2230  # widest finger: ten 0.22 um units (MOS_FINGER_UNITS); the bands hold 2.65 / 2.51 um
+EDGE = 430  # OD to the cell edge: DF.4c_LV / DF.16_LV against any neighbour's well
+OD_GAP = 280  # diffusion break between a pair's devices that share no strip (DF.3a_LV)
 GATE_GAP = 660  # gate to gate across a shared strip when the gates differ (their M2 bars, Mn.2a)
 
 # ---- rule-derived dimensions
@@ -143,7 +145,7 @@ CO = 220  # CO.1 (exact size)
 CO_PITCH = 470  # contacts along a strip (CO.2a 0.25)
 CO_GATE = 150  # contact to gate (CO.7): the contacted pitch is L + CO + 2 CO_GATE
 CO_OD_END, CO_OD_SIDE = 70, 70  # COMP enclosure of the contacts (CO.4)
-OD_EXT = 180  # OD past the outermost strip centre (CO / 2 + CO.4): 0.44 past the gate (DF.6_MV 0.4)
+OD_EXT = 180  # OD past the outermost strip centre (CO / 2 + CO.4): 0.44 past the gate (DF.6_LV 0.24)
 V1, V2 = RULES["V1"]["cut"], RULES["V2"]["cut"]  # V1.1 / V2.1
 # M1 strips and pads: via + 2 x 0.06 (V1.3d: their ends may then be flush); M2 / M3 bars: via + 2 x 0.01
 M1W, M2W, M3W = 380, 280, 280
@@ -157,20 +159,20 @@ M1_BAR_MIN = 560  # shortest gate M1 bar, and the area that forces it
 M1_AREA = RULES["M1"]["area"]
 M2_SPACE = RULES["M2"]["space"]  # M2.2a
 M2_LINE_END = M2_SPACE  # M2 line end to line end: no end-of-line rule, ALIGN's M2 EndToEnd
-M2_MIN_LEN = 940  # M2.3 (520 nm), and spans an M3 track: XPITCH + 2 BAR_END
+M2_MIN_LEN = 980  # M2.3 (520 nm), and spans an M3 track: XPITCH + 2 BAR_END
 BAR_END = 190  # a bar past its outermost via centre (V / 2 + 0.06 line-end enclosure, V1.4b)
 GATE_PAD = 130  # M1 pad half height around a gate contact: the via flush, 0.06 beside it (V1.3d)
-PO_ENDCAP = 220  # poly past COMP (PL.4)
+PO_ENDCAP = 220  # poly past COMP (PL.4_LV)
 PO_HEAD = 180  # poly head half height around a gate contact (CO / 2 + CO.3 0.07)
 PO_BAR_END = 180  # poly bar past its outer gates (CO / 2 + CO.3)
 SHORT_L = 700  # shorter gates leave room for the gate pads beside the S/D contacts (M1.2a)
-M1_EDGE, M2_EDGE, M3_EDGE = 115, 140, 280  # bars kept from the cell edge
+M1_EDGE, M2_EDGE, M3_EDGE = 115, 140, 300  # bars kept from the cell edge
 
 # the metals a fringe MOM capacitor stacks (flow/momcap), from the top: Metal3 to Metal5; an
 # N-layer unit uses the top N, its shield the metal below them. The array units' channels run on the
 # metal below their plates, which must be the horizontal Metal2 on its tracks (primitives/mom.py), so
-# a three-layer unit takes the thick top metal (Metal5, its space at 0.68 um in RULES), whose width and
-# space the fingers then share
+# a three-layer unit takes the thick top metal (Metal5, 0.44 / 0.46 um), whose width and space the
+# fingers then share
 MOM_LAYERS = (3, 4, 5)
 
 # the unsalicided P+ poly resistor ppolyf_u (flow/layout/rows/rescell.py, 350 ohm/sq): its LVS
@@ -185,6 +187,7 @@ RES = {
     "markers": {"SAB": (0, 280), "RES_MK": (0, 0)},
     "implant": ("PP", 300),
     "co_space": 220,
+    "well_space": 600,  # the body clear of the NMOS cells' N-well band (the sub variant of the device)
     "co_enc": 70,
     "min_area": {"SAB": 2_010_000},
     "cdl": "R{name} {plus} {minus} {bulk} ppolyf_u l={l}u w={w}u",

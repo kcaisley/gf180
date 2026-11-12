@@ -5,11 +5,11 @@ Defines the `hdl21.ExternalModule`s of the GF180MCU devices (``pdk_data``, ``pri
 the compile pass that converts process-portable `hdl21.Primitive` elements into them.
 
 The process: 180 nm, 3.3 V, 5 V and 6 V CMOS, five metals (gf180mcuD: Metal1 to Metal4 and an
-11 kA top metal, Metal5), MIM option B. The kit's core is the 5 V device pair the
-gf180mcu_fd_sc_mcu7t5v0 standard cells are made of (nfet_05v0, pfet_05v0), at a 5.0 V supply.
+11 kA top metal, Metal5), MIM option B. The kit's core is the 3.3 V device pair the
+gf180mcu_osu_sc_gp9t3v3 standard cells (Oklahoma State's) are made of, at a 3.3 V supply.
 
 Target devices for conversion from `hdl21.Primitive`:
-- MOS: nfet_05v0, pfet_05v0 (CORE), nfet_06v0, pfet_06v0 (IO)
+- MOS: nfet_3v3, pfet_3v3 (CORE: the decks' nfet_03v3, pfet_03v3), nfet_05v0, pfet_05v0 (IO)
 - Resistors: the poly, diffusion and well resistors (ppolyf_u, npolyf_u, ppolyf_u_1k, ...)
 - Capacitors: MIM (cap_mim_2f0ff, ...) and MOS capacitors
 - Diodes: the junction diodes (diode_nd2ps_06v0, ...)
@@ -50,21 +50,18 @@ from .primitives.prim_dicts import (
 )
 
 # The widest MOS finger each row-cell type fits (pdk/gf180/layout/tech.py: W_MAX for the analog
-# cells, LOGIC_OD for the logic ones), in unit widths (default_xtor_size: 300 nm). Generators that
+# cells, LOGIC_OD for the logic ones), in unit widths (default_xtor_size: 220 nm). Generators that
 # place their devices in these cells read this through hdl21.pdk.default() and size every finger in
 # whole units.
-MOS_FINGER_UNITS = {"analog": 6, "logic_n": 2, "logic_p": 3}
+MOS_FINGER_UNITS = {"analog": 10, "logic_n": 8, "logic_p": 7}
 # The narrowest analog finger the row cells contact: a 220 nm contact with 70 nm of COMP past its
 # end and beside it (layout/tech.py CO, CO_OD_END, CO_OD_SIDE) needs 360 nm, two units.
 MOS_FINGER_MIN_UNITS = 2
 # A fingered MOS's w is its total width, with nf: the models divide it among the fingers (a
 # w=6u nf=2 device carries the current of two w=3u ones).
 
-# The standard-cell library's densest decoupling cell (gf180mcu_fd_sc_mcu7t5v0__fillcap_64, 35.84 x
-# 3.92 um, 78.6 fF), its supply capacitance over its area in fF/um^2: Spectre AC at the core supply
-# on the open decks, flat to 100 MHz (92 % of it at 1 GHz). A block's decoupling is this times the
-# area its layout fills with decap cells.
-DECAP_FF_PER_UM2 = 0.56
+# No DECAP_FF_PER_UM2: the library's one decoupling cell (gf180mcu_osu_sc_gp9t3v3__decap_1) leaves
+# its devices' gates on a net of their own, floating: 0.53 fF over its 15 um^2 in Spectre AC.
 
 # the open_pdks variant: five metals, 11 kA top metal, MIM option B
 VARIANT = "gf180mcuD"
@@ -94,7 +91,6 @@ class Install(PdkInstallation):
         Path("libs.tech/ngspice/design.ngspice"),
         Path("libs.tech/ngspice/sm141064.ngspice"),
         Path("libs.tech/ngspice/sm141064_mim.ngspice"),
-        Path("libs.ref/gf180mcu_fd_sc_mcu7t5v0/spice/gf180mcu_fd_sc_mcu7t5v0.spice"),
     ]
 
     @property
@@ -104,13 +100,7 @@ class Install(PdkInstallation):
 
     # what the site's model decks do not model, per simulator: a device, or "cells", and why
     # (pdk/test_spice.py)
-    UNMODELED: ClassVar[dict[str, dict[str, str]]] = {
-        "spectre": {
-            name: f"the open decks name both a subcircuit and the model cards {name}: Spectre cannot bind an "
-            "instance of that name (SFE-405); the core 5 V devices wrap the same cards"
-            for name in ("nfet_06v0", "pfet_06v0")
-        },
-    }
+    UNMODELED: ClassVar[dict[str, dict[str, str]]] = {}
 
     def simulation_includes(self, corner: h.pdk.Corner, simulator: str = "spectre", mismatch: bool = False) -> list:
         """What a simulation of this package's devices and standard cells includes, in order, for
@@ -139,7 +129,7 @@ class Install(PdkInstallation):
         ]
 
     SUPPLY_RAILS: ClassVar[dict[str, dict[str, float]]] = {
-        "VDD": {"nominal": 5.0, "min": 4.5, "max": 5.5},
+        "VDD": {"nominal": 3.3, "min": 2.97, "max": 3.63},
         "VSS": {"nominal": 0.0, "min": 0.0, "max": 0.0},
     }
 
@@ -156,8 +146,8 @@ class Install(PdkInstallation):
         }[corner]
 
     def include(self, corner: h.pdk.Corner) -> h.sim.Lib:
-        """The MOS models at ``corner`` (typical, ff, ss: the 3.3 V devices' corners; the 6 V
-        family, the core 5 V devices among it, stays at typical in every section)."""
+        """The MOS models at ``corner`` (typical, ff, ss: the 3.3 V core's corners; the 6 V family,
+        the 5 V I/O devices among it, stays at typical in every section)."""
         if corner not in CORNERS:
             raise ValueError(f"Invalid corner {corner}")
         return h.sim.Lib(path=self.models, section=CORNERS[corner])
@@ -190,22 +180,23 @@ class Install(PdkInstallation):
         return self._passive("diode", corner)
 
     def include_stdcell(self) -> h.sim.Include:
-        """The gf180mcu_fd_sc_mcu7t5v0 cells' CDL (``stdcell_path``, by default this package's
-        copy, which the row cells and LVS draw from: M lines on the device subcircuits, which
-        Spectre takes, the wells on the rails); the device models must be included separately."""
-        default = Path(__file__).resolve().parents[1] / "openroad/sp/gf180mcu_fd_sc_mcu7t5v0.sp"
+        """The gf180mcu_osu_sc_gp9t3v3 cells' CDL (``stdcell_path``, by default this package's copy,
+        which the row cells and LVS draw from: M lines on the decks' model cards, which Spectre
+        takes); the device models must be included separately."""
+        default = Path(__file__).resolve().parents[1] / "openroad/sp/gf180mcu_osu_sc_gp9t3v3.sp"
         return h.sim.Include(path=self.stdcell_path or default)
 
     def include_stdcell_ngspice(self) -> h.sim.Include:
         """The same cells for ngspice, whose subcircuit calls must be X lines (this package's copy
-        of the PDK's SPICE, the wells on the rails: openroad/views.py)."""
-        return h.sim.Include(path=Path(__file__).resolve().parent / "gf180mcu_fd_sc_mcu7t5v0.spice")
+        of the library's SPICE, on the package's device names: openroad/views.py)."""
+        return h.sim.Include(path=Path(__file__).resolve().parent / "gf180mcu_osu_sc_gp9t3v3.spice")
 
     def include_devices(self) -> h.sim.Include:
         """Spectre definitions of the package's device names the PDK's decks lack
-        (``spectre_devices.scs``; ngspice's are ``ngspice_devices.spice``): the poly resistor by its
-        body's ``l`` and ``w`` (the frida poly-resistor request's parameters), on the deck's
-        ``ppolyf_u``; include after the resistors."""
+        (``spectre_devices.scs``; ngspice's are ``ngspice_devices.spice``): the 3.3 V core pair
+        (``nfet_3v3``, ``pfet_3v3``, on the decks' ``nfet_03v3`` and ``pfet_03v3``, which Spectre
+        cannot call by name) and the poly resistor by its body's ``l`` and ``w`` (the frida
+        poly-resistor request's parameters), on the deck's ``ppolyf_u``; include after the models."""
         return h.sim.Include(path=Path(__file__).resolve().parent / "spectre_devices.scs")
 
 
@@ -235,7 +226,7 @@ class Gf180Walker(h.HierarchyWalker):
 
     def visit_external_module_call(self, call: h.ExternalModuleCall) -> h.Instantiable:
         """Generic logic cells (inverter, nor2, nand2) and the generic cell library become
-        gf180mcu_fd_sc_mcu7t5v0 standard cells."""
+        gf180mcu_osu_sc_gp9t3v3 standard cells."""
         from flow.circuit.cells import substitute
 
         from . import cells

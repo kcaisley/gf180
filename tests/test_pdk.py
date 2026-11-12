@@ -34,7 +34,7 @@ def _tech(name: str):
 
 def test_supply_metadata() -> None:
     rails = gf180.Install.SUPPLY_RAILS
-    assert rails["VDD"]["nominal"] == 5.0
+    assert rails["VDD"]["nominal"] == 3.3
     assert gf180.Install.supply_voltage(h.pdk.Corner.SLOW) == rails["VDD"]["min"]
     assert gf180.Install.supply_voltage(h.pdk.Corner.TYP) == rails["VDD"]["nominal"]
     assert gf180.Install.supply_voltage(h.pdk.Corner.FAST) == rails["VDD"]["max"]
@@ -70,9 +70,9 @@ def test_compile_and_netlist_mos_variant(
 
 
 @pytest.mark.parametrize("vth", [h.MosVth.LOW, h.MosVth.STD, h.MosVth.HIGH])
-@pytest.mark.parametrize(("tp", "name"), [(h.MosType.NMOS, "nfet_05v0"), (h.MosType.PMOS, "pfet_05v0")])
+@pytest.mark.parametrize(("tp", "name"), [(h.MosType.NMOS, "nfet_3v3"), (h.MosType.PMOS, "pfet_3v3")])
 def test_every_threshold_is_the_core_device(vth, tp, name) -> None:
-    """The kit has one threshold: every request of the core family is the 5 V device the
+    """The kit has one threshold: every request of the core family is the 3.3 V device the
     standard cells and the row cells are made of (layout/tech.py MODELS)."""
 
     @h.module
@@ -106,7 +106,7 @@ def test_passives_compile() -> None:
 def test_row_profile_matches_the_device_tables() -> None:
     """The row cells' widest and narrowest finger in unit widths, and the poly resistor, as the
     hdl21 package states them."""
-    unit = round(float(default_xtor_size["nfet_05v0"][0]) * 1e9)
+    unit = round(float(default_xtor_size["nfet_3v3"][0]) * 1e9)
     assert MOS_FINGER_UNITS["analog"] == _tech("W_MAX") // unit
     co, end, side = _tech("CO"), _tech("CO_OD_END"), _tech("CO_OD_SIDE")
     assert (MOS_FINGER_MIN_UNITS - 1) * unit < co + max(end, side) * 2 <= MOS_FINGER_MIN_UNITS * unit
@@ -129,12 +129,16 @@ def test_includes_serve_both_simulators() -> None:
     assert set(Install.UNMODELED) <= {"spectre", "ngspice"}
 
 
-def test_cell_netlists_have_their_wells_on_the_rails() -> None:
-    """Both copies of the library's netlist (openroad/views.py) carry no well pins: VNW and VPW
-    are on VDD and VSS, as the rows tie them."""
-    for path in (KIT / "openroad/sp/gf180mcu_fd_sc_mcu7t5v0.sp", KIT / "hdl21/gf180mcu_fd_sc_mcu7t5v0.spice"):
-        body = [line for line in path.read_text().splitlines() if not line.startswith("*")]
-        assert not any(pin in line.split() for line in body for pin in ("VNW", "VPW")), path
+def test_cell_netlists_name_the_kits_devices() -> None:
+    """The library's netlist as the kit keeps it (openroad/views.py): the CDL's M lines on the
+    deck's 3.3 V names (LVS), the SPICE's X lines on the package's (simulation)."""
+    cdl = (KIT / "openroad/sp/gf180mcu_osu_sc_gp9t3v3.sp").read_text().splitlines()
+    spice = (KIT / "hdl21/gf180mcu_osu_sc_gp9t3v3.spice").read_text().splitlines()
+    assert {line.split()[-7] for line in cdl if line.startswith("M")} <= {"nfet_03v3", "pfet_03v3"}
+    assert {line.split()[5] for line in spice if line.startswith("X")} == {"nfet_3v3", "pfet_3v3"}
+    from pdk.gf180.netlist.lvs import DECK_NAMES
+
+    assert set(DECK_NAMES) == set(_tech("MODELS").values())
 
 
 def test_device_tables_are_the_kits() -> None:

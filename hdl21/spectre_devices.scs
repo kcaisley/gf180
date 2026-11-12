@@ -1,7 +1,16 @@
 // The package's device names the GF180MCU decks lack, for Spectre (pdk_logic.Install.include_devices;
-// ngspice reads the same definitions from ngspice_devices.spice). Include after the resistor models
-// (res_<corner>). SPICE syntax, as the decks' own.
+// ngspice reads the same definitions from ngspice_devices.spice). Include after the models (the MOS
+// corner and res_<corner>). SPICE syntax, as the decks' own.
 simulator lang=spice
+
+* the 3.3 V core pair by the package's names: the decks' nfet_03v3 / pfet_03v3 name both a
+* subcircuit and model cards, which Spectre cannot bind by name (SFE-405); called here by X line
+.subckt nfet_3v3 d g s b w=2.2e-7 l=2.8e-7 nf=1 m=1 ad=0 as=0 pd=0 ps=0
+x0 d g s b nfet_03v3 w=w l=l nf=nf m=m ad=ad as=as pd=pd ps=ps
+.ends nfet_3v3
+.subckt pfet_3v3 d g s b w=2.2e-7 l=2.8e-7 nf=1 m=1 ad=0 as=0 pd=0 ps=0
+x0 d g s b pfet_03v3 w=w l=l nf=nf m=m ad=ad as=as pd=pd ps=ps
+.ends pfet_3v3
 
 * the unsalicided P+ poly resistor by its body's length and width (meters), the parameters of
 * frida's poly-resistor requests (flow/layout/devices/polyres), on the deck's ppolyf_u

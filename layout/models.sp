@@ -23,5 +23,5 @@
 .model nsvt nmos l=1 w=1 nf=1 m=1 stack=1 parallel=1
 .model plvt pmos l=1 w=1 nf=1 m=1 stack=1 parallel=1
 .model nlvt nmos l=1 w=1 nf=1 m=1 stack=1 parallel=1
-.model nfet_05v0 nmos l=1 w=1 nf=1 m=1 stack=1 parallel=1 far=0
-.model pfet_05v0 pmos l=1 w=1 nf=1 m=1 stack=1 parallel=1 far=0
+.model nfet_3v3 nmos l=1 w=1 nf=1 m=1 stack=1 parallel=1 far=0
+.model pfet_3v3 pmos l=1 w=1 nf=1 m=1 stack=1 parallel=1 far=0

@@ -18,10 +18,10 @@ def test_unrelated_external_call_unchanged():
 def test_stdcell_include_is_separate():
     include = site.install.include_stdcell()
     assert isinstance(include, h.sim.Include)
-    assert include.path.name == "gf180mcu_fd_sc_mcu7t5v0.sp"
+    assert include.path.name == "gf180mcu_osu_sc_gp9t3v3.sp"
     assert include.path not in site.MODEL_FILES
     assert isinstance(site.install.include(h.pdk.Corner.TYP), h.sim.Lib)
-    assert pdk.Install.supply_voltage(h.pdk.Corner.TYP) == 5.0
+    assert pdk.Install.supply_voltage(h.pdk.Corner.TYP) == 3.3
 
 
 @pytest.mark.parametrize(("kind", "drive"), [("inverter", 1), ("inverter", 4), ("inverter", 8), ("nor2", 2), ("nand2", 1)])
@@ -33,11 +33,11 @@ def test_logic_cells_are_library_cells(kind: str, drive: int):
     assert name in cells.CELLS
     pins, _ = cells.CELLS[name]
     assert {p.name for p in inner.of.module.port_list} == set(pins)
-    assert {"VDD", "VSS"} <= set(pins) and not {"VNW", "VPW"} & set(pins)
+    assert {"VDD", "VSS"} <= set(pins)
 
 
 def test_generic_cells_resolve():
-    assert cells.LIBRARY == "gf180mcu_fd_sc_mcu7t5v0"
+    assert cells.LIBRARY == "gf180mcu_osu_sc_gp9t3v3"
     for generic, (cell, pins, _high, _low) in cells.GENERIC.items():
         assert cell in cells.CELLS, generic
         assert set(cells.CELLS[cell][0]) - {"VNW", "VPW"} <= set(pins) | set(_high) | set(_low) | set(cells.CELLS[cell][0])

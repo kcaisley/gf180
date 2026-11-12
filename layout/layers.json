@@ -83,7 +83,7 @@
       },
       "Direction": "V",
       "Color": [],
-      "Pitch": 560,
+      "Pitch": 600,
       "Width": 300,
       "MinL": 500,
       "MaxL": null,
@@ -146,9 +146,9 @@
       },
       "Direction": "H",
       "Color": [],
-      "Pitch": 560,
+      "Pitch": 630,
       "Width": 280,
-      "MinL": 940,
+      "MinL": 980,
       "MaxL": null,
       "EndToEnd": 280,
       "Offset": 0,
@@ -212,9 +212,9 @@
       },
       "Direction": "V",
       "Color": [],
-      "Pitch": 560,
+      "Pitch": 600,
       "Width": 280,
-      "MinL": 940,
+      "MinL": 980,
       "MaxL": null,
       "EndToEnd": 280,
       "Offset": 0,
@@ -338,11 +338,11 @@
       },
       "Direction": "V",
       "Color": [],
-      "Pitch": 1120,
+      "Pitch": 900,
       "Width": 440,
       "MinL": 1279,
       "MaxL": null,
-      "EndToEnd": 680,
+      "EndToEnd": 460,
       "Offset": 0,
       "UnitC": {
         "L_3Sigma": 0.16,
@@ -666,9 +666,9 @@
     },
     {
       "Layer": "Hvt",
-      "GdsLayerNo": 112,
+      "GdsLayerNo": 255,
       "GdsDatatype": {
-        "Draw": 1
+        "Draw": 3
       }
     },
     {
@@ -680,9 +680,9 @@
     },
     {
       "Layer": "Pb",
-      "GdsLayerNo": 55,
+      "GdsLayerNo": 255,
       "GdsDatatype": {
-        "Draw": 0
+        "Draw": 5
       },
       "pbWidth": 180,
       "pbWidth_H": 160
@@ -733,9 +733,9 @@
     },
     {
       "Layer": "Cap",
-      "m1Pitch": 560,
-      "m2Pitch": 560,
-      "m3Pitch": 560,
+      "m1Pitch": 600,
+      "m2Pitch": 630,
+      "m3Pitch": 600,
       "m1Width": 380,
       "m2Width": 280,
       "m3Width": 280

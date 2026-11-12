@@ -2,8 +2,8 @@
 GlobalFoundries GF180MCU (open PDK, gf180mcuD) for Hdl21
 
 This package provides Hdl21 integration for the open GF180MCU PDK, variant gf180mcuD (five
-metals, 11 kA top metal, MIM option B), with its 5 V core devices and the
-gf180mcu_fd_sc_mcu7t5v0 standard cells.
+metals, 11 kA top metal, MIM option B), with its 3.3 V core devices and Oklahoma State's
+gf180mcu_osu_sc_gp9t3v3 standard cells.
 
 Usage:
     import hdl21 as h

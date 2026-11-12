@@ -1,8 +1,11 @@
 """Parameter classes and module constructors for the GF180MCU devices.
 
 The devices are the open PDK's simulation subcircuits (``libs.tech/ngspice/sm141064.ngspice``),
-named as the PDK's own netlists and its KLayout LVS name them: ``nfet_05v0``, ``ppolyf_u``,
-``cap_mim_2f0ff``. Sizes are in meters, as the subcircuits take them.
+named as the PDK's own netlists and its KLayout LVS name them (``nfet_05v0``, ``ppolyf_u``,
+``cap_mim_2f0ff``), but for the 3.3 V core pair: the decks name both a subcircuit and model cards
+``nfet_03v3`` (``pfet_03v3``), which Spectre cannot call by name, so the package's are ``nfet_3v3``
+and ``pfet_3v3``, a wrapper of each in ``spectre_devices.scs`` / ``ngspice_devices.spice`` (the LVS
+source names them as the deck does: ``netlist/lvs.py``). Sizes are in meters.
 
 Derived from the Hdl21 GF180 package (``pdks/Gf180/gf180_hdl21/pdk_data.py``).
 """
@@ -22,10 +25,10 @@ class Gf180MosParams:
     """GF180MCU MOS parameters: the subcircuits' ``w`` (the total width: the models divide it among
     the ``nf`` fingers), ``l``, ``nf`` and ``m``.
 
-    Defaults: the 5 V core devices' (nfet_05v0) narrowest width and shortest length."""
+    Defaults: the 3.3 V core devices' (nfet_3v3) narrowest width and shortest length."""
 
-    w = h.Param(dtype=h.Scalar, desc="Total width (m)", default=0.3 * µ)
-    l = h.Param(dtype=h.Scalar, desc="Length (m)", default=0.6 * µ)
+    w = h.Param(dtype=h.Scalar, desc="Total width (m)", default=0.22 * µ)
+    l = h.Param(dtype=h.Scalar, desc="Length (m)", default=0.28 * µ)
     nf = h.Param(dtype=int, desc="Number of fingers", default=1)
     m = h.Param(dtype=int, desc="Multiplier", default=1)
     # the source and drain diffusions (m^2, m): the subcircuits' 0 defaults would leave their
