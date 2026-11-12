@@ -1,5 +1,6 @@
-* The package's device names the GF180MCU decks lack, in SPICE, which Spectre and ngspice both
-* read (pdk_logic.Install.include_devices): include after the resistor models (res_<corner>).
+* The package's device names the GF180MCU decks lack, for ngspice (pdk_logic.Install.simulation_includes;
+* Spectre reads the same definitions from spectre_devices.scs). Include after the resistor models
+* (res_<corner>).
 
 * the unsalicided P+ poly resistor by its body's length and width (meters), the parameters of
 * frida's poly-resistor requests (flow/layout/devices/polyres), on the deck's ppolyf_u

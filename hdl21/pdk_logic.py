@@ -60,6 +60,8 @@ MOS_FINGER_MIN_UNITS = 2
 # A fingered MOS's w is its total width, with nf: the models divide it among the fingers (a
 # w=6u nf=2 device carries the current of two w=3u ones).
 
+# the open_pdks variant: five metals, 11 kA top metal, MIM option B
+VARIANT = "gf180mcuD"
 # the model library's sections per corner: the MOS's, and each passive's and the diodes' as
 # <kind>_<section> (res_typical, mimcap_ff, diode_ss)
 CORNERS = {h.pdk.Corner.TYP: "typical", h.pdk.Corner.FAST: "ff", h.pdk.Corner.SLOW: "ss"}
@@ -75,15 +77,12 @@ class Install(PdkInstallation):
     takes their SPICE syntax as it is, so one set of includes serves both simulators.
 
     Attributes:
-        pdk_path: The PDK root (``GF180_OPEN_PDK``), holding ``<VARIANT>/libs.{ref,tech}``.
+        pdk_path: The PDK root (``GF180_OPEN_PDK``), holding ``<VARIANT>/libs.{ref,tech}`` (``VARIANT``).
         stdcell_path: The standard cells' CDL (this package's copy, ``openroad/sp``, unless given).
     """
 
     pdk_path: Path  # the open PDK's root (ciel's PDK root)
     stdcell_path: Path | None = None  # the standard cells' CDL, separate from the model libraries
-
-    # the open_pdks variant: five metals, 11 kA top metal, MIM option B
-    VARIANT: ClassVar[str] = "gf180mcuD"
 
     LOCAL_SPICE_FILES: ClassVar[list[Path]] = [
         Path("gf180mcuD/libs.tech/ngspice/design.ngspice"),
@@ -95,7 +94,7 @@ class Install(PdkInstallation):
     @property
     def models(self) -> Path:
         """The model library: its MOS corners and each passive's and diode's sections."""
-        return self.pdk_path / self.VARIANT / "libs.tech/ngspice/sm141064.ngspice"
+        return self.pdk_path / VARIANT / "libs.tech/ngspice/sm141064.ngspice"
 
     # what the site's model decks do not model, per simulator: a device, or "cells", and why
     # (pdk/test_spice.py)
@@ -119,7 +118,9 @@ class Install(PdkInstallation):
             raise NotImplementedError("the open decks' mismatch is their agauss switches, not Spectre's statistics")
         if simulator not in ("spectre", "ngspice"):
             raise ValueError(f"no {simulator} models for GF180MCU")
-        cells = self.include_stdcell() if simulator == "spectre" else self.include_stdcell_ngspice()
+        spectre = simulator == "spectre"
+        cells = self.include_stdcell() if spectre else self.include_stdcell_ngspice()
+        devices = self.include_devices() if spectre else h.sim.Include(path=Path(__file__).parent / "ngspice_devices.spice")
         return [
             self.include_pre_simulation(),
             self.include(corner),
@@ -128,7 +129,7 @@ class Install(PdkInstallation):
             self.include_moscap(corner),
             self.include_diodes(corner),
             cells,
-            self.include_devices(),
+            devices,
         ]
 
     SUPPLY_RAILS: ClassVar[dict[str, dict[str, float]]] = {
@@ -158,7 +159,7 @@ class Install(PdkInstallation):
     def include_pre_simulation(self) -> h.sim.Include:
         """The models' global switches and corner parameters (``design.ngspice``: statistics off
         unless a run sets them), which every model card reads."""
-        return h.sim.Include(path=self.pdk_path / self.VARIANT / "libs.tech/ngspice/design.ngspice")
+        return h.sim.Include(path=self.pdk_path / VARIANT / "libs.tech/ngspice/design.ngspice")
 
     def _passive(self, kind: str, corner: h.pdk.Corner) -> h.sim.Lib:
         if corner not in CORNERS:
@@ -195,10 +196,11 @@ class Install(PdkInstallation):
         return h.sim.Include(path=Path(__file__).resolve().parent / "gf180mcu_fd_sc_mcu7t5v0.spice")
 
     def include_devices(self) -> h.sim.Include:
-        """The package's device names the PDK's decks lack (``devices.sp``, SPICE, which both
-        simulators read): the poly resistor by its body's ``l`` and ``w`` (the frida poly-resistor
-        request's parameters), on the deck's ``ppolyf_u``; include after the resistors."""
-        return h.sim.Include(path=Path(__file__).resolve().parent / "devices.sp")
+        """Spectre definitions of the package's device names the PDK's decks lack
+        (``spectre_devices.scs``; ngspice's are ``ngspice_devices.spice``): the poly resistor by its
+        body's ``l`` and ``w`` (the frida poly-resistor request's parameters), on the deck's
+        ``ppolyf_u``; include after the resistors."""
+        return h.sim.Include(path=Path(__file__).resolve().parent / "spectre_devices.scs")
 
 
 # the row cells' source and drain strips along the channel (layout/tech.py): an outer one, from
@@ -270,7 +272,7 @@ class Gf180Walker(h.HierarchyWalker):
                 return module
         raise RuntimeError(f"No GF180MCU MOS for type={mostype}, family={mosfam}")
 
-    def mos_params(self, params: MosParams, modname: str) -> Gf180MosParams:
+    def mos_params(self, params: MosParams, modname: str):
         """The subcircuit's parameters: the width (total: the models divide it among the ``nf``
         fingers) and length, unitless values scaled by the model's defaults, and the source and
         drain diffusions as the row cells draw them (``junctions``) where the width is a number."""

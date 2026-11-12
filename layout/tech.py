@@ -185,5 +185,5 @@ RES = {
     "min_area": {"SAB": 2_010_000},
     "cdl": "R{name} {plus} {minus} {bulk} ppolyf_u l={l}u w={w}u",
     "bulk": True,  # the model's third terminal, the substrate
-    "sim_model": "ppolyf_u_lw",  # the package's wrapper taking the body's l and w (hdl21/devices.sp)
+    "sim_model": "ppolyf_u_lw",  # the package's wrapper taking the body's l and w (hdl21/spectre_devices.scs, hdl21/ngspice_devices.spice)
 }

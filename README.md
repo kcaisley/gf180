@@ -55,7 +55,7 @@ uvx ciel==3.2.0 enable --pdk-root ~/Documents/libs/gf180mcu-open-pdk \
 
 | Path | Contents |
 | --- | --- |
-| `hdl21/` | devices (`pdk_data`, `primitives`), the compile pass and the site installation (`pdk_logic`, `site`), the logic cells (`stdcells`), the generic cell library (`cells.py`, written by `flow.circuit.cellmap`), the device wrappers both simulators read (`devices.sp`), the cells for ngspice (`gf180mcu_fd_sc_mcu7t5v0.spice`) |
+| `hdl21/` | devices (`pdk_data`, `primitives`), the compile pass and the site installation (`pdk_logic`, `site`), the logic cells (`stdcells`), the generic cell library (`cells.py`, written by `flow.circuit.cellmap`), the device names the decks lack (`spectre_devices.scs`, `ngspice_devices.spice`), the cells for ngspice (`gf180mcu_fd_sc_mcu7t5v0.spice`) |
 | `layout/` | the row profile and rules (`tech.py`, `README.md`), the library locations (`paths.py`), ALIGN's files written by `flow/layout/make_pdk.py` (`layers.json`, `models.sp`, `rows.json`, `user_template.sp`), `netlists/` |
 | `netlist/lvs.py` | the LVS source rules |
 | `signoff.py` | the signoff provider of `flow/layout/signoff.py` |
