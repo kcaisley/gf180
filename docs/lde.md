@@ -52,4 +52,4 @@ symmetry (common centroid, dummies) rather than on the model.
 | S/D contact resistance (RCO) | Pre-layout | `rdsmod` | `rdsmod = 0` in the cards | Off |
 | S/D junctions | Pre-layout | `as/ad/ps/pd` | given by the compile pass (`junctions`) | **0** in the wrappers |
 
-The same notes for the other PDKs: `pdk/ihp130/docs/lde.md`, `pdk/tower180/docs/lde.md`.
+The same notes for the other PDKs: `pdk/<kit>/docs/lde.md`.
