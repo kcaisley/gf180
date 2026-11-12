@@ -1,0 +1,36 @@
+{
+ "provenance": {
+  "pdk": "gf180",
+  "kind": "moscap",
+  "corner": "TYPICAL",
+  "temperature_c": 25,
+  "method": "Spectre AC in inversion",
+  "code_sha": "8e5cb610553c",
+  "date": "2026-11-12"
+ },
+ "vdd_v": 5.0,
+ "swing_v": 0.5,
+ "cap_l": 8,
+ "unit": {
+  "w_m": 3e-07,
+  "l_m": 5e-07
+ },
+ "devices": {
+  "NMOS/STD": {
+   "ff_per_unit": 3.1255669462610634,
+   "ff_per_um2": 2.6046391218842198
+  },
+  "NMOS/LOW": {
+   "ff_per_unit": 3.1255669462610634,
+   "ff_per_um2": 2.6046391218842198
+  },
+  "PMOS/STD": {
+   "ff_per_unit": 2.48051005580861,
+   "ff_per_um2": 2.0670917131738418
+  },
+  "PMOS/LOW": {
+   "ff_per_unit": 2.48051005580861,
+   "ff_per_um2": 2.0670917131738418
+  }
+ }
+}

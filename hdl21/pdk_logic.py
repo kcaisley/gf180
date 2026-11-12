@@ -202,6 +202,27 @@ class Install(PdkInstallation):
         Install.singleton = self
 
 
+# the row cells' source and drain strips along the channel (layout/tech.py): an outer one, from
+# the gate to the diffusion's end (OD_EXT + CO / 2 + CO_GATE), and one shared by two gates (CO + 2
+# CO_GATE), in meters
+_SD_OUTER, _SD_INNER = 440e-9, 520e-9
+
+
+def junctions(w: float, nf: int) -> dict[str, float]:
+    """The source and drain diffusions of a device of total width ``w`` (m) in ``nf`` fingers as the
+    row cells draw it (strips S D S D ..., the ends outer): their areas and perimeters (m^2, m),
+    gate edges included, as the open LVS deck extracts them (KLayout's AS, AD, PS, PD)."""
+    wf = w / nf
+    strips = [_SD_OUTER if i in (0, nf) else _SD_INNER for i in range(nf + 1)]
+    source, drain = strips[0::2], strips[1::2]
+    return {
+        "As": sum(source) * wf,
+        "ad": sum(drain) * wf,
+        "ps": sum(2 * (s + wf) for s in source),
+        "pd": sum(2 * (d + wf) for d in drain),
+    }
+
+
 class Gf180Walker(h.HierarchyWalker):
     """Hierarchical walker converting `h.Primitive` instances to GF180MCU `ExternalModule`s."""
 
@@ -256,11 +277,15 @@ class Gf180Walker(h.HierarchyWalker):
             return CACHE.mos_modcalls[params]
         mod = self.mos_module(params)
         w, l = self.use_defaults(params, mod.name, default_xtor_size)
+        nf = int(params.nf or 1)
+        # the diffusions' junctions where the width is a number (not an expression)
+        sd = {k: v for k, v in junctions(float(w), nf).items()} if isinstance(w, h.Prefixed) else {}
         modparams = Gf180MosParams(
             w=w,  # the total width: the models divide it among the nf fingers
             l=l,
-            nf=int(params.nf or 1),
+            nf=nf,
             m=int(params.mult or 1),
+            **{k: h.Prefixed.new(round(v * 1e18) / 1e18 if k in ("As", "ad") else round(v * 1e12) / 1e12) for k, v in sd.items()},
         )
         modcall = mod(modparams)
         CACHE.mos_modcalls[params] = modcall

@@ -28,6 +28,13 @@ class Gf180MosParams:
     l = h.Param(dtype=h.Scalar, desc="Length (m)", default=0.6 * µ)
     nf = h.Param(dtype=int, desc="Number of fingers", default=1)
     m = h.Param(dtype=int, desc="Multiplier", default=1)
+    # the source and drain diffusions (m^2, m): the subcircuits' 0 defaults would leave their
+    # junctions out (BSIM4 reads a given 0 as none); the compile pass gives the row cells' own
+    # (pdk_logic.junctions). ``As``: SPICE's ``as``, a Python keyword (SPICE and Spectre take it)
+    ad = h.Param(dtype=h.Scalar, desc="Drain area (m^2)", default=0)
+    As = h.Param(dtype=h.Scalar, desc="Source area (m^2)", default=0)
+    pd = h.Param(dtype=h.Scalar, desc="Drain perimeter (m)", default=0)
+    ps = h.Param(dtype=h.Scalar, desc="Source perimeter (m)", default=0)
 
 
 @h.paramclass
