@@ -35,7 +35,8 @@ uvx ciel==3.2.0 enable --pdk-root ~/Documents/libs/gf180mcu-open-pdk \
 - **Standard cells: gf180mcu_fd_sc_mcu7t5v0** (7 tracks, 3.92 um rows of 0.56 um sites), LibreLane's
   default for gf180mcuD and denser than mcu9t5v0's 5.04 um rows; their rows are the row cells'.
 - **Core devices: nfet_05v0 / pfet_05v0**, the 5 V devices the cells are made of (Dualgate and
-  V5_XTOR, L >= 0.6 / 0.5 um, on the 6 V family's cards); **VDD 5.0 V** (4.5 / 5.5 V corners, the
+  V5_XTOR, on the 6 V family's cards; frida's unit length 0.6 um for both, the NMOS's minimum,
+  the PMOS's being 0.5 um); **VDD 5.0 V** (4.5 / 5.5 V corners, the
   cells' tt_025C_5v00 and ss_125C_4v50 Liberty). The 6 V devices are the I/O family. The 3.3 V
   devices are left out: their PMOS cannot share an N-well with the cells' (DV.9) and the rows'
   wells run unbroken.

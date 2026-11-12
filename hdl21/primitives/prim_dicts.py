@@ -89,12 +89,15 @@ bjts: dict[str, h.ExternalModule] = {}
 stdcells: dict[str, h.ExternalModule] = {}
 
 # MOS: (width, length) per model; generic sizes are multiples of these. The narrowest COMP of the
-# 5/6 V devices (DF.1a_MV) and each model's shortest gate (PL.2_MV)
+# 5/6 V devices (DF.1a_MV) and the family's shortest NMOS gate (PL.2_MV: 0.6 um at 5 V, 0.7 um at
+# 6 V) for both types, though the PMOS's rule is shorter (0.5, 0.55): frida's unit length is one
+# for both (flow.circuit.devices.core_unit, the shortest of these), which a row inverter draws on
+# its NMOS and PMOS alike
 default_xtor_size: dict[str, tuple[h.Prefixed, h.Prefixed]] = {
     "nfet_05v0": (0.3 * µ, 0.6 * µ),
-    "pfet_05v0": (0.3 * µ, 0.5 * µ),
+    "pfet_05v0": (0.3 * µ, 0.6 * µ),
     "nfet_06v0": (0.3 * µ, 0.7 * µ),
-    "pfet_06v0": (0.3 * µ, 0.55 * µ),
+    "pfet_06v0": (0.3 * µ, 0.7 * µ),
 }
 
 # Resistors: (width, length); the poly resistors' narrowest body (PRES.1, LRES.1), the others' 1 um

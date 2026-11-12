@@ -65,7 +65,9 @@ RULES = {
         f"M{n}": {"width": 280, "space": 280, "pitch": 560, "area": 144_400, "enclosed_area": 1_000_000}
         for n in range(2, 5)
     },  # Mn.1, Mn.2a, Mn.3
-    "M5": {"width": 440, "space": 460, "pitch": 900, "area": 562_500},  # MT.1, MT.2a, MT.4 (top metal)
+    # the top metal: MT.1 / MT.2a are 0.44 / 0.46, taken at 0.56 / 0.56 (MT.4 the area), so a MOM
+    # unit with fingers on it (MOM_LAYERS) abuts on the rows' 0.56 um grid, as ALIGN places it
+    "M5": {"width": 560, "space": 560, "pitch": 1120, "area": 562_500},
     # the poly resistor's cell keeps half this space between its poly and the cell edge (rescell):
     # its Pplus, 0.3 past the poly (PRES.5), then stays 0.4 from a neighbour's (PP.2), its poly 0.6
     # from a neighbour's COMP and poly (PRES.3, PRES.4); PL.3a is 0.24
@@ -167,8 +169,8 @@ M1_EDGE, M2_EDGE, M3_EDGE = 115, 140, 280  # bars kept from the cell edge
 # the metals a fringe MOM capacitor stacks (flow/momcap), from the top: Metal3 to Metal5; an
 # N-layer unit uses the top N, its shield the metal below them. The array units' channels run on the
 # metal below their plates, which must be the horizontal Metal2 on its tracks (primitives/mom.py), so
-# a three-layer unit takes the thick top metal (Metal5, 0.44 / 0.46 um), whose width and space the
-# fingers then share
+# a three-layer unit takes the thick top metal (Metal5, at 0.56 / 0.56 um in RULES), whose width and
+# space the fingers then share
 MOM_LAYERS = (3, 4, 5)
 
 # the unsalicided P+ poly resistor ppolyf_u (flow/layout/rows/rescell.py, 350 ohm/sq): its LVS
