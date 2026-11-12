@@ -111,6 +111,8 @@ def test_row_profile_matches_the_device_tables() -> None:
     co, end, side = _tech("CO"), _tech("CO_OD_END"), _tech("CO_OD_SIDE")
     assert (MOS_FINGER_MIN_UNITS - 1) * unit < co + max(end, side) * 2 <= MOS_FINGER_MIN_UNITS * unit
     assert _tech("RES")["model"] in ress
+    # a three-layer MOM unit's channels run on the metal below its plates: the horizontal Metal2
+    assert len(_tech("MOM_LAYERS")) == 3 and _tech("MOM_LAYERS")[0] - 1 == 2
     for name in caps | diodes:
         assert name.islower()
 

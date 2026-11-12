@@ -164,10 +164,12 @@ PO_BAR_END = 180  # poly bar past its outer gates (CO / 2 + CO.3)
 SHORT_L = 700  # shorter gates leave room for the gate pads beside the S/D contacts (M1.2a)
 M1_EDGE, M2_EDGE, M3_EDGE = 115, 140, 280  # bars kept from the cell edge
 
-# the metals a fringe MOM capacitor stacks (flow/momcap), from the top: the upper uniform thin
-# metals at their minimum width and space (Metal2 to Metal4; Metal5 is the thick top metal); an
-# N-layer unit uses the top N, its shield the metal below them
-MOM_LAYERS = (2, 3, 4)
+# the metals a fringe MOM capacitor stacks (flow/momcap), from the top: Metal3 to Metal5; an
+# N-layer unit uses the top N, its shield the metal below them. The array units' channels run on the
+# metal below their plates, which must be the horizontal Metal2 on its tracks (primitives/mom.py), so
+# a three-layer unit takes the thick top metal (Metal5, 0.44 / 0.46 um), whose width and space the
+# fingers then share
+MOM_LAYERS = (3, 4, 5)
 
 # the unsalicided P+ poly resistor ppolyf_u (flow/layout/rows/rescell.py, 350 ohm/sq): its LVS
 # device (Poly2 under Pplus, SAB and RES_MK, the deck's ppolyf_u) and model; PRES.1 (width); SAB

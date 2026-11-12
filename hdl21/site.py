@@ -1,12 +1,13 @@
-"""Site-local GF180MCU installation: the open PDK, an open_pdks release installed by ciel (its PDK
-root, holding gf180mcuD/libs.ref and gf180mcuD/libs.tech; README.md has the version)."""
+"""Site-local GF180MCU installation: the open PDK fetched by ciel (README.md), whose ngspice models,
+KLayout decks and standard cells the kit reads, and the kit's copy of the standard cells' CDL."""
 
 import os
 from pathlib import Path
 
-from .pdk_logic import Install
+from .pdk_logic import VARIANT, Install
 
-PDK_PATH = Path(os.environ.get("GF180_OPEN_PDK", "/users/kcaisley/Documents/libs/gf180mcu-open-pdk"))
+# the gf180mcuD variant under the ciel PDK root (open_pdks bd4da56c, README.md)
+PDK_PATH = Path(os.environ.get("GF180_OPEN_PDK", "/users/kcaisley/Documents/libs/gf180mcu-open-pdk"), VARIANT)
 # the standard cells' CDL, the wells on the rails (this package's copy: openroad/views.py)
 STDCELL_PATH = Path(__file__).resolve().parents[1] / "openroad/sp/gf180mcu_fd_sc_mcu7t5v0.sp"
 install = Install(pdk_path=PDK_PATH, stdcell_path=STDCELL_PATH)

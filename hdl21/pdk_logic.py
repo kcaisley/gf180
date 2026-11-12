@@ -60,6 +60,12 @@ MOS_FINGER_MIN_UNITS = 2
 # A fingered MOS's w is its total width, with nf: the models divide it among the fingers (a
 # w=6u nf=2 device carries the current of two w=3u ones).
 
+# The standard-cell library's densest decoupling cell (gf180mcu_fd_sc_mcu7t5v0__fillcap_64, 35.84 x
+# 3.92 um, 78.6 fF), its supply capacitance over its area in fF/um^2: Spectre AC at the core supply
+# on the open decks, flat to 100 MHz (92 % of it at 1 GHz). A block's decoupling is this times the
+# area its layout fills with decap cells.
+DECAP_FF_PER_UM2 = 0.56
+
 # the open_pdks variant: five metals, 11 kA top metal, MIM option B
 VARIANT = "gf180mcuD"
 # the model library's sections per corner: the MOS's, and each passive's and the diodes' as
@@ -70,31 +76,31 @@ CORNERS = {h.pdk.Corner.TYP: "typical", h.pdk.Corner.FAST: "ff", h.pdk.Corner.SL
 @dataclass
 class Install(PdkInstallation):
     """
-    PDK installation data for GF180MCU: an open_pdks install of the gf180mcu family (``ciel``'s
-    PDK root, ``pdk_path``) and the variant used (``gf180mcuD``).
+    PDK installation data for GF180MCU: the ``VARIANT`` (gf180mcuD) directory of an open_pdks
+    install of the gf180mcu family (``ciel``'s PDK root, ``GF180_OPEN_PDK``), ``pdk_path``.
 
     Spectre and ngspice both read the open PDK's ngspice decks (``libs.tech/ngspice``): Spectre
     takes their SPICE syntax as it is, so one set of includes serves both simulators.
 
     Attributes:
-        pdk_path: The PDK root (``GF180_OPEN_PDK``), holding ``<VARIANT>/libs.{ref,tech}`` (``VARIANT``).
+        pdk_path: The variant's directory, ``<GF180_OPEN_PDK>/gf180mcuD``, holding ``libs.{ref,tech}``.
         stdcell_path: The standard cells' CDL (this package's copy, ``openroad/sp``, unless given).
     """
 
-    pdk_path: Path  # the open PDK's root (ciel's PDK root)
+    pdk_path: Path  # the open_pdks variant directory, <GF180_OPEN_PDK>/gf180mcuD (libs.tech, libs.ref)
     stdcell_path: Path | None = None  # the standard cells' CDL, separate from the model libraries
 
     LOCAL_SPICE_FILES: ClassVar[list[Path]] = [
-        Path("gf180mcuD/libs.tech/ngspice/design.ngspice"),
-        Path("gf180mcuD/libs.tech/ngspice/sm141064.ngspice"),
-        Path("gf180mcuD/libs.tech/ngspice/sm141064_mim.ngspice"),
-        Path("gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu7t5v0/spice/gf180mcu_fd_sc_mcu7t5v0.spice"),
+        Path("libs.tech/ngspice/design.ngspice"),
+        Path("libs.tech/ngspice/sm141064.ngspice"),
+        Path("libs.tech/ngspice/sm141064_mim.ngspice"),
+        Path("libs.ref/gf180mcu_fd_sc_mcu7t5v0/spice/gf180mcu_fd_sc_mcu7t5v0.spice"),
     ]
 
     @property
     def models(self) -> Path:
         """The model library: its MOS corners and each passive's and diode's sections."""
-        return self.pdk_path / VARIANT / "libs.tech/ngspice/sm141064.ngspice"
+        return self.pdk_path / "libs.tech/ngspice/sm141064.ngspice"
 
     # what the site's model decks do not model, per simulator: a device, or "cells", and why
     # (pdk/test_spice.py)
@@ -159,7 +165,7 @@ class Install(PdkInstallation):
     def include_pre_simulation(self) -> h.sim.Include:
         """The models' global switches and corner parameters (``design.ngspice``: statistics off
         unless a run sets them), which every model card reads."""
-        return h.sim.Include(path=self.pdk_path / VARIANT / "libs.tech/ngspice/design.ngspice")
+        return h.sim.Include(path=self.pdk_path / "libs.tech/ngspice/design.ngspice")
 
     def _passive(self, kind: str, corner: h.pdk.Corner) -> h.sim.Lib:
         if corner not in CORNERS:

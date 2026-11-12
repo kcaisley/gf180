@@ -39,15 +39,19 @@ uvx ciel==3.2.0 enable --pdk-root ~/Documents/libs/gf180mcu-open-pdk \
   cells' tt_025C_5v00 and ss_125C_4v50 Liberty). The 6 V devices are the I/O family. The 3.3 V
   devices are left out: their PMOS cannot share an N-well with the cells' (DV.9) and the rows'
   wells run unbroken.
-- **Poly resistor: ppolyf_u** (unsalicided P+, 350 ohm/sq); **MOM capacitors** on Metal2 to Metal4.
+- **Poly resistor: ppolyf_u** (unsalicided P+, 350 ohm/sq); **MOM capacitors** on Metal3 to
+  Metal5 (the array units' channels need Metal2 below the plates: a three-layer unit takes the
+  thick top metal).
 - **Simulators**: Spectre and ngspice both read the open PDK's ngspice decks (Spectre takes their
-  SPICE as it is), so FRIDA's Spectre flows run here unchanged. The 6 V devices are not
+  SPICE as it is), so FRIDA's Spectre flows run here unchanged. The decks' MOS wrappers leave the
+  source and drain junctions out unless given: the compile pass gives the row cells' own. The 6 V devices are not
   instanced by name in Spectre: the decks name a subcircuit and model cards alike `nfet_06v0`
   (`Install.UNMODELED`). The decks' `ff` / `ss` sections vary the 3.3 V devices only
   (`docs/lde.md`).
-- **Signoff: open tools.** DRC: gdscheck's embedded gf180mcuD deck (core and antenna suites; the
-  kit's own `gdscheck/drc.yaml` is a metal-stack precheck where a gdscheck lacks it) and the open
-  PDK's KLayout deck without density (`klayout/drc.py`). LVS: the open PDK's KLayout deck
+- **Signoff: open tools.** DRC (`signoff.run_drc`): gdscheck's embedded gf180mcuD deck (core and
+  antenna suites; the kit's own `gdscheck/drc.yaml` is a metal-stack precheck, which frida's CLI
+  runs until its `GDSCHECK_PROCESSES` names gf180mcuD) and the open PDK's KLayout deck without
+  density (`klayout/drc.py`). LVS: the open PDK's KLayout deck
   (`klayout/lvs.py`). Extraction: KLayout-PEX by FasterCap on `kpex/stack.json` (its 2.5-D
   coefficients in `kpex/parasitics.json`, kpex's own gf180mcuD ones).
 
