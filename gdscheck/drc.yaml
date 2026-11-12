@@ -1,0 +1,56 @@
+# SPDX-License-Identifier: Apache-2.0
+
+name: GF180MCU precheck
+version: "1.0"
+
+# A conservative block-level precheck of the metal stack, from the metal and via rules in
+# pdk/gf180/layout/tech.py (RULES), not a replacement for the foundry deck. gdscheck embeds the
+# open PDK's full decks too: `gdscheck run -p gf180mcuD -s core` (blocks; `main` adds density and
+# antenna checks for a chip).
+suites:
+  - name: precheck
+    path: suites/precheck.yml
+    description: Grid, metal, via and enclosure checks
+
+decks:
+  - name: geometry
+    path: decks/geometry.yml
+    description: Minimum metal and via geometry
+  - name: enclosure
+    path: decks/enclosure.yml
+    description: Via containment by adjacent metals
+  - name: offgrid
+    path: decks/offgrid.yml
+    description: Manufacturing grid
+
+layers:
+  - name: Metal1
+    gds_layer: 34
+    gds_datatype: 0
+  - name: Via1
+    gds_layer: 35
+    gds_datatype: 0
+  - name: Metal2
+    gds_layer: 36
+    gds_datatype: 0
+  - name: Via2
+    gds_layer: 38
+    gds_datatype: 0
+  - name: Metal3
+    gds_layer: 42
+    gds_datatype: 0
+  - name: Via3
+    gds_layer: 40
+    gds_datatype: 0
+  - name: Metal4
+    gds_layer: 46
+    gds_datatype: 0
+  - name: Via4
+    gds_layer: 41
+    gds_datatype: 0
+  - name: Metal5
+    gds_layer: 81
+    gds_datatype: 0
+  - name: PrBoundary
+    gds_layer: 0
+    gds_datatype: 0

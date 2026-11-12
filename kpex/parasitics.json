@@ -1,0 +1,299 @@
+{
+ "side_halo": 8.0,
+ "capacitance": {
+  "substrates": [
+   {
+    "layer_name": "PO",
+    "area_capacitance": 110.67,
+    "perimeter_capacitance": 50.72
+   },
+   {
+    "layer_name": "M1",
+    "area_capacitance": 29.304,
+    "perimeter_capacitance": 39.431
+   },
+   {
+    "layer_name": "M2",
+    "area_capacitance": 15.016,
+    "perimeter_capacitance": 33.298
+   },
+   {
+    "layer_name": "M3",
+    "area_capacitance": 10.094,
+    "perimeter_capacitance": 30.021
+   },
+   {
+    "layer_name": "M4",
+    "area_capacitance": 7.602,
+    "perimeter_capacitance": 28.153
+   },
+   {
+    "layer_name": "M5",
+    "area_capacitance": 5.798,
+    "perimeter_capacitance": 30.386
+   }
+  ],
+  "overlaps": [
+   {
+    "top_layer_name": "M1",
+    "bottom_layer_name": "PO",
+    "capacitance": 51.434
+   },
+   {
+    "top_layer_name": "M2",
+    "bottom_layer_name": "PO",
+    "capacitance": 19.263
+   },
+   {
+    "top_layer_name": "M2",
+    "bottom_layer_name": "M1",
+    "capacitance": 59.027
+   },
+   {
+    "top_layer_name": "M3",
+    "bottom_layer_name": "PO",
+    "capacitance": 11.85
+   },
+   {
+    "top_layer_name": "M3",
+    "bottom_layer_name": "M1",
+    "capacitance": 20.238
+   },
+   {
+    "top_layer_name": "M3",
+    "bottom_layer_name": "M2",
+    "capacitance": 59.027
+   },
+   {
+    "top_layer_name": "M4",
+    "bottom_layer_name": "PO",
+    "capacitance": 8.557
+   },
+   {
+    "top_layer_name": "M4",
+    "bottom_layer_name": "M1",
+    "capacitance": 12.212
+   },
+   {
+    "top_layer_name": "M4",
+    "bottom_layer_name": "M2",
+    "capacitance": 20.238
+   },
+   {
+    "top_layer_name": "M4",
+    "bottom_layer_name": "M3",
+    "capacitance": 59.027
+   },
+   {
+    "top_layer_name": "M5",
+    "bottom_layer_name": "PO",
+    "capacitance": 6.337
+   },
+   {
+    "top_layer_name": "M5",
+    "bottom_layer_name": "M1",
+    "capacitance": 8.142
+   },
+   {
+    "top_layer_name": "M5",
+    "bottom_layer_name": "M2",
+    "capacitance": 11.067
+   },
+   {
+    "top_layer_name": "M5",
+    "bottom_layer_name": "M3",
+    "capacitance": 17.276
+   },
+   {
+    "top_layer_name": "M5",
+    "bottom_layer_name": "M4",
+    "capacitance": 39.351
+   }
+  ],
+  "sidewalls": [
+   {
+    "layer_name": "PO",
+    "capacitance": 11.098,
+    "offset": -0.082
+   },
+   {
+    "layer_name": "M1",
+    "capacitance": 40.512,
+    "offset": -0.053
+   },
+   {
+    "layer_name": "M2",
+    "capacitance": 46.736,
+    "offset": 0.289
+   },
+   {
+    "layer_name": "M3",
+    "capacitance": 70.675,
+    "offset": 0.534
+   },
+   {
+    "layer_name": "M4",
+    "capacitance": 77.388,
+    "offset": 0.611
+   },
+   {
+    "layer_name": "M5",
+    "capacitance": 114.86,
+    "offset": 0.025
+   }
+  ],
+  "sideoverlaps": [
+   {
+    "in_layer_name": "M1",
+    "out_layer_name": "PO",
+    "capacitance": 46.7
+   },
+   {
+    "in_layer_name": "PO",
+    "out_layer_name": "M1",
+    "capacitance": 17.946
+   },
+   {
+    "in_layer_name": "M2",
+    "out_layer_name": "PO",
+    "capacitance": 36.169
+   },
+   {
+    "in_layer_name": "PO",
+    "out_layer_name": "M2",
+    "capacitance": 8.706
+   },
+   {
+    "in_layer_name": "M2",
+    "out_layer_name": "M1",
+    "capacitance": 47.566
+   },
+   {
+    "in_layer_name": "M1",
+    "out_layer_name": "M2",
+    "capacitance": 32.048
+   },
+   {
+    "in_layer_name": "M3",
+    "out_layer_name": "PO",
+    "capacitance": 31.927
+   },
+   {
+    "in_layer_name": "PO",
+    "out_layer_name": "M3",
+    "capacitance": 5.895
+   },
+   {
+    "in_layer_name": "M3",
+    "out_layer_name": "M1",
+    "capacitance": 36.609
+   },
+   {
+    "in_layer_name": "M1",
+    "out_layer_name": "M3",
+    "capacitance": 18.135
+   },
+   {
+    "in_layer_name": "M3",
+    "out_layer_name": "M2",
+    "capacitance": 49.011
+   },
+   {
+    "in_layer_name": "M2",
+    "out_layer_name": "M3",
+    "capacitance": 36.626
+   },
+   {
+    "in_layer_name": "M4",
+    "out_layer_name": "PO",
+    "capacitance": 29.407
+   },
+   {
+    "in_layer_name": "PO",
+    "out_layer_name": "M4",
+    "capacitance": 8.557
+   },
+   {
+    "in_layer_name": "M4",
+    "out_layer_name": "M1",
+    "capacitance": 32.104
+   },
+   {
+    "in_layer_name": "M1",
+    "out_layer_name": "M4",
+    "capacitance": 13.159
+   },
+   {
+    "in_layer_name": "M4",
+    "out_layer_name": "M2",
+    "capacitance": 36.563
+   },
+   {
+    "in_layer_name": "M2",
+    "out_layer_name": "M4",
+    "capacitance": 22.405
+   },
+   {
+    "in_layer_name": "M4",
+    "out_layer_name": "M3",
+    "capacitance": 47.871
+   },
+   {
+    "in_layer_name": "M3",
+    "out_layer_name": "M4",
+    "capacitance": 39.964
+   },
+   {
+    "in_layer_name": "M5",
+    "out_layer_name": "PO",
+    "capacitance": 31.458
+   },
+   {
+    "in_layer_name": "PO",
+    "out_layer_name": "M5",
+    "capacitance": 3.365
+   },
+   {
+    "in_layer_name": "M5",
+    "out_layer_name": "M1",
+    "capacitance": 33.316
+   },
+   {
+    "in_layer_name": "M1",
+    "out_layer_name": "M5",
+    "capacitance": 9.825
+   },
+   {
+    "in_layer_name": "M5",
+    "out_layer_name": "M2",
+    "capacitance": 36.591
+   },
+   {
+    "in_layer_name": "M2",
+    "out_layer_name": "M5",
+    "capacitance": 15.764
+   },
+   {
+    "in_layer_name": "M5",
+    "out_layer_name": "M3",
+    "capacitance": 41.466
+   },
+   {
+    "in_layer_name": "M3",
+    "out_layer_name": "M5",
+    "capacitance": 22.988
+   },
+   {
+    "in_layer_name": "M5",
+    "out_layer_name": "M4",
+    "capacitance": 52.692
+   },
+   {
+    "in_layer_name": "M4",
+    "out_layer_name": "M5",
+    "capacitance": 34.954
+   }
+  ]
+ },
+ "resistance": {}
+}

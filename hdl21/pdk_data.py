@@ -1,0 +1,118 @@
+"""Parameter classes and module constructors for the GF180MCU devices.
+
+The devices are the open PDK's simulation subcircuits (``libs.tech/ngspice/sm141064.ngspice``),
+named as the PDK's own netlists and its KLayout LVS name them: ``nfet_05v0``, ``ppolyf_u``,
+``cap_mim_2f0ff``. Sizes are in meters, as the subcircuits take them.
+
+Derived from the Hdl21 GF180 package (``pdks/Gf180/gf180_hdl21/pdk_data.py``).
+"""
+
+from copy import deepcopy
+
+import hdl21 as h
+from hdl21.prefix import µ, p
+from hdl21.primitives import Diode, Mos, PhysicalCapacitor, ThreeTerminalResistor
+from vlsirtools import SpiceType
+
+PDK_NAME = "gf180"
+
+
+@h.paramclass
+class Gf180MosParams:
+    """GF180MCU MOS parameters: the subcircuits' ``w`` (the total width: the models divide it among
+    the ``nf`` fingers), ``l``, ``nf`` and ``m``.
+
+    Defaults: the 5 V core devices' (nfet_05v0) narrowest width and shortest length."""
+
+    w = h.Param(dtype=h.Scalar, desc="Total width (m)", default=0.3 * µ)
+    l = h.Param(dtype=h.Scalar, desc="Length (m)", default=0.6 * µ)
+    nf = h.Param(dtype=int, desc="Number of fingers", default=1)
+    m = h.Param(dtype=int, desc="Multiplier", default=1)
+
+
+@h.paramclass
+class Gf180ResParams:
+    """GF180MCU resistor parameters (the subcircuits' ``r_width``, ``r_length``, meters)."""
+
+    r_width = h.Param(dtype=h.Scalar, desc="Width (m)", default=1 * µ)
+    r_length = h.Param(dtype=h.Scalar, desc="Length (m)", default=1 * µ)
+
+
+@h.paramclass
+class Gf180CapParams:
+    """GF180MCU MIM and MOS capacitor parameters (the subcircuits' ``c_width``, ``c_length``, meters)."""
+
+    c_width = h.Param(dtype=h.Scalar, desc="Width (m)", default=10 * µ)
+    c_length = h.Param(dtype=h.Scalar, desc="Length (m)", default=10 * µ)
+
+
+@h.paramclass
+class Gf180DiodeParams:
+    """GF180MCU diode parameters: junction area (m^2) and perimeter (m), as the models take them."""
+
+    area = h.Param(dtype=h.Scalar, desc="Junction area (m^2)", default=1 * p)
+    pj = h.Param(dtype=h.Scalar, desc="Junction perimeter (m)", default=4 * µ)
+
+
+@h.paramclass
+class Gf180LogicParams:
+    """GF180MCU standard cells have no parameters."""
+
+
+def xtor_module(modname: str) -> h.ExternalModule:
+    """A MOS subcircuit (d g s b)."""
+    return h.ExternalModule(
+        domain=PDK_NAME,
+        name=modname,
+        desc=f"{PDK_NAME} PDK MOS {modname}",
+        port_list=deepcopy(Mos.port_list),
+        paramtype=Gf180MosParams,
+        spicetype=SpiceType.SUBCKT,
+    )
+
+
+def res_module(modname: str) -> h.ExternalModule:
+    """A resistor subcircuit: its two heads and the body's bulk (p, n, b)."""
+    return h.ExternalModule(
+        domain=PDK_NAME,
+        name=modname,
+        desc=f"{PDK_NAME} PDK resistor {modname}",
+        port_list=deepcopy(ThreeTerminalResistor.port_list),
+        paramtype=Gf180ResParams,
+        spicetype=SpiceType.SUBCKT,
+    )
+
+
+def cap_module(modname: str) -> h.ExternalModule:
+    """A two-terminal capacitor subcircuit (p, n)."""
+    return h.ExternalModule(
+        domain=PDK_NAME,
+        name=modname,
+        desc=f"{PDK_NAME} PDK capacitor {modname}",
+        port_list=deepcopy(PhysicalCapacitor.port_list),
+        paramtype=Gf180CapParams,
+        spicetype=SpiceType.SUBCKT,
+    )
+
+
+def diode_module(modname: str) -> h.ExternalModule:
+    """A junction diode model (p, n): a D element on the model card."""
+    return h.ExternalModule(
+        domain=PDK_NAME,
+        name=modname,
+        desc=f"{PDK_NAME} PDK diode {modname}",
+        port_list=deepcopy(Diode.port_list),
+        paramtype=Gf180DiodeParams,
+        spicetype=SpiceType.DIODE,
+    )
+
+
+def logic_module(modname: str, terminals: list[str]) -> h.ExternalModule:
+    """A standard cell, its pins in the library netlist's order."""
+    return h.ExternalModule(
+        domain=PDK_NAME,
+        name=modname,
+        desc=f"{PDK_NAME} standard cell {modname}",
+        port_list=[h.Inout(name=pin) for pin in terminals],
+        paramtype=Gf180LogicParams,
+    )
