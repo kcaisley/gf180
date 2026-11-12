@@ -48,6 +48,7 @@ width `RAIL` = 300, widest finger `W_MAX` = 1800 (six 300 nm units), diffusion t
 - The poly resistor is ppolyf_u (350 ohm/sq, 0.8 um wide, `RES`): SAB, RES_MK and Pplus as the
   PDK's own resistor cells; its cell keeps its Pplus 0.4 um from a neighbour's (`RULES["PO"]`).
 - MOM capacitors stack Metal3 to Metal5 (`MOM_LAYERS`): an array unit's channels need Metal2 below
-  its plates, so a three-layer unit takes the 11 kA top metal, whose rules (0.44 / 0.46 um) `RULES`
-  takes at 0.56 / 0.56 um: the fingers share them, and a unit abuts on the rows' 0.56 um grid.
+  its plates, so a three-layer unit takes the 11 kA top metal, its width 0.44 um and its space
+  taken at 0.68 um (`RULES`, MT.2a 0.46): the fingers share them, and a unit abuts on the rows'
+  0.56 um grid.
 - MOS fingers are `nf` in the models; `w` is the total width.

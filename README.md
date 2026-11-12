@@ -82,7 +82,7 @@ uv run python -m flow.layout.devices.mosfet.characterize gf180                # 
 uv run python -m flow.layout.devices.momcap.characterize gf180 --workers 8    # KLayout-PEX
 ```
 
-## Limits
+## Notes
 
 - The row engine ties wells only at row ends (`EDGE_TIE`); the filltie's taps reach 15 um
   (DF.13_MV, DF.14_MV), so rows wider than about 30 um fail those rules.

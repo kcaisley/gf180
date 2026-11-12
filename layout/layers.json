@@ -339,10 +339,10 @@
       "Direction": "V",
       "Color": [],
       "Pitch": 1120,
-      "Width": 560,
-      "MinL": 1005,
+      "Width": 440,
+      "MinL": 1279,
       "MaxL": null,
-      "EndToEnd": 560,
+      "EndToEnd": 680,
       "Offset": 0,
       "UnitC": {
         "L_3Sigma": 0.16,
