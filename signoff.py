@@ -106,3 +106,13 @@ def run_pex(
 
     del source_path, source_top, options
     return run_layout_pex("gf180", gds_path, layout_top, output_stem, run_dir / "pex")
+
+
+def run_layout_pex(*, run_dir: Path, gds_path: Path, layout_top: str, output_stem: str) -> Path:
+    """The kit's own extraction of a layout by its own net names (``Extractor.CALIBRE`` names the
+    kit's extractor, which for an open PDK is KLayout-PEX too): FasterCap on ``kpex/stack.json`` in
+    ``pex/``."""
+
+    from flow.layout.kpex import run_layout_pex as extract
+
+    return extract("gf180", gds_path, layout_top, output_stem, run_dir / "pex")

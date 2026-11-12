@@ -84,6 +84,10 @@ diodes: dict[str, h.ExternalModule] = {
     )
 }
 
+# not wrapped by this package: the PDK's BJTs (npn_*, pnp_*); the standard cells are hdl21/cells.py
+bjts: dict[str, h.ExternalModule] = {}
+stdcells: dict[str, h.ExternalModule] = {}
+
 # MOS: (width, length) per model; generic sizes are multiples of these. The narrowest COMP of the
 # 5/6 V devices (DF.1a_MV) and each model's shortest gate (PL.2_MV)
 default_xtor_size: dict[str, tuple[h.Prefixed, h.Prefixed]] = {

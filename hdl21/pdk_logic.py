@@ -18,7 +18,7 @@ Derived from the Hdl21 GF180 package (``pdks/Gf180/gf180_hdl21/pdk_logic.py``).
 """
 
 from pathlib import Path
-from typing import Any, ClassVar, Optional
+from typing import Any, ClassVar
 
 import hdl21 as h
 from hdl21.pdk import PdkInstallation
@@ -38,7 +38,16 @@ from hdl21.primitives import (
 from pydantic.dataclasses import dataclass
 
 from .pdk_data import Gf180CapParams, Gf180DiodeParams, Gf180MosParams, Gf180ResParams
-from .primitives.prim_dicts import *
+from .primitives.prim_dicts import (
+    CACHE,
+    caps,
+    default_cap_size,
+    default_res_size,
+    default_xtor_size,
+    diodes,
+    ress,
+    xtors,
+)
 
 # The widest MOS finger each row-cell type fits (pdk/gf180/layout/tech.py: W_MAX for the analog
 # cells, LOGIC_OD for the logic ones), in unit widths (default_xtor_size: 300 nm). Generators that
@@ -66,12 +75,15 @@ class Install(PdkInstallation):
     takes their SPICE syntax as it is, so one set of includes serves both simulators.
 
     Attributes:
-        pdk_path: The PDK root (``GF180_OPEN_PDK``), holding ``<variant>/libs.{ref,tech}``.
-        variant: The open_pdks variant (gf180mcuD: five metals, 11 kA top metal, MIM option B).
+        pdk_path: The PDK root (``GF180_OPEN_PDK``), holding ``<VARIANT>/libs.{ref,tech}``.
+        stdcell_path: The standard cells' CDL (this package's copy, ``openroad/sp``, unless given).
     """
 
-    pdk_path: Path
-    variant: str = "gf180mcuD"
+    pdk_path: Path  # the open PDK's root (ciel's PDK root)
+    stdcell_path: Path | None = None  # the standard cells' CDL, separate from the model libraries
+
+    # the open_pdks variant: five metals, 11 kA top metal, MIM option B
+    VARIANT: ClassVar[str] = "gf180mcuD"
 
     LOCAL_SPICE_FILES: ClassVar[list[Path]] = [
         Path("gf180mcuD/libs.tech/ngspice/design.ngspice"),
@@ -83,7 +95,7 @@ class Install(PdkInstallation):
     @property
     def models(self) -> Path:
         """The model library: its MOS corners and each passive's and diode's sections."""
-        return self.pdk_path / self.variant / "libs.tech/ngspice/sm141064.ngspice"
+        return self.pdk_path / self.VARIANT / "libs.tech/ngspice/sm141064.ngspice"
 
     # what the site's model decks do not model, per simulator: a device, or "cells", and why
     # (pdk/test_spice.py)
@@ -146,7 +158,7 @@ class Install(PdkInstallation):
     def include_pre_simulation(self) -> h.sim.Include:
         """The models' global switches and corner parameters (``design.ngspice``: statistics off
         unless a run sets them), which every model card reads."""
-        return h.sim.Include(path=self.pdk_path / self.variant / "libs.tech/ngspice/design.ngspice")
+        return h.sim.Include(path=self.pdk_path / self.VARIANT / "libs.tech/ngspice/design.ngspice")
 
     def _passive(self, kind: str, corner: h.pdk.Corner) -> h.sim.Lib:
         if corner not in CORNERS:
@@ -171,10 +183,11 @@ class Install(PdkInstallation):
         return self._passive("diode", corner)
 
     def include_stdcell(self) -> h.sim.Include:
-        """The gf180mcu_fd_sc_mcu7t5v0 cells' CDL (this package's copy, which the row cells and LVS
-        draw from: M lines on the device subcircuits, which Spectre takes, the wells on the
-        rails); the device models must be included separately."""
-        return h.sim.Include(path=Path(__file__).resolve().parents[1] / "openroad/sp/gf180mcu_fd_sc_mcu7t5v0.sp")
+        """The gf180mcu_fd_sc_mcu7t5v0 cells' CDL (``stdcell_path``, by default this package's
+        copy, which the row cells and LVS draw from: M lines on the device subcircuits, which
+        Spectre takes, the wells on the rails); the device models must be included separately."""
+        default = Path(__file__).resolve().parents[1] / "openroad/sp/gf180mcu_fd_sc_mcu7t5v0.sp"
+        return h.sim.Include(path=self.stdcell_path or default)
 
     def include_stdcell_ngspice(self) -> h.sim.Include:
         """The same cells for ngspice, whose subcircuit calls must be X lines (this package's copy
@@ -186,20 +199,6 @@ class Install(PdkInstallation):
         simulators read): the poly resistor by its body's ``l`` and ``w`` (the frida poly-resistor
         request's parameters), on the deck's ``ppolyf_u``; include after the resistors."""
         return h.sim.Include(path=Path(__file__).resolve().parent / "devices.sp")
-
-    singleton: Optional["Install"] = None
-
-    @classmethod
-    def instance(cls) -> "Install":
-        """Get the singleton Install instance."""
-        if cls.singleton is None:
-            raise ValueError("The Install instance has not been initialized yet.")
-        return cls.singleton
-
-    def __post_init__(self):
-        if Install.singleton is not None:
-            raise ValueError("The Install instance has already been initialized.")
-        Install.singleton = self
 
 
 # the row cells' source and drain strips along the channel (layout/tech.py): an outer one, from
@@ -271,23 +270,22 @@ class Gf180Walker(h.HierarchyWalker):
                 return module
         raise RuntimeError(f"No GF180MCU MOS for type={mostype}, family={mosfam}")
 
+    def mos_params(self, params: MosParams, modname: str) -> Gf180MosParams:
+        """The subcircuit's parameters: the width (total: the models divide it among the ``nf``
+        fingers) and length, unitless values scaled by the model's defaults, and the source and
+        drain diffusions as the row cells draw them (``junctions``) where the width is a number."""
+        w, l = self.use_defaults(params, modname)
+        nf = int(params.nf or 1)
+        sd = junctions(float(w), nf) if isinstance(w, h.Prefixed) else {}
+        rounded = {k: h.Prefixed.new(round(v, 18 if k in ("As", "ad") else 12)) for k, v in sd.items()}
+        return Gf180MosParams(w=w, l=l, nf=nf, m=int(params.mult or 1), **rounded)
+
     def mos_module_call(self, params: MosParams) -> h.ExternalModuleCall:
         """Retrieve or create a `Call` for MOS parameters `params`."""
         if params in CACHE.mos_modcalls:
             return CACHE.mos_modcalls[params]
         mod = self.mos_module(params)
-        w, l = self.use_defaults(params, mod.name, default_xtor_size)
-        nf = int(params.nf or 1)
-        # the diffusions' junctions where the width is a number (not an expression)
-        sd = {k: v for k, v in junctions(float(w), nf).items()} if isinstance(w, h.Prefixed) else {}
-        modparams = Gf180MosParams(
-            w=w,  # the total width: the models divide it among the nf fingers
-            l=l,
-            nf=nf,
-            m=int(params.mult or 1),
-            **{k: h.Prefixed.new(round(v * 1e18) / 1e18 if k in ("As", "ad") else round(v * 1e12) / 1e12) for k, v in sd.items()},
-        )
-        modcall = mod(modparams)
+        modcall = mod(self.mos_params(params, mod.name))
         CACHE.mos_modcalls[params] = modcall
         return modcall
 
@@ -299,7 +297,7 @@ class Gf180Walker(h.HierarchyWalker):
         mod = ress.get(model)
         if mod is None:
             raise RuntimeError(f"No Res module for model {model}. Available: {list(ress)}")
-        w, l = self.use_defaults(params, mod.name, default_res_size)
+        w, l = self._sizes(params, mod.name, default_res_size)
         modcall = mod(Gf180ResParams(r_width=w, r_length=l))
         CACHE.res_modcalls[params] = modcall
         return modcall
@@ -312,7 +310,7 @@ class Gf180Walker(h.HierarchyWalker):
         mod = caps.get(model)
         if mod is None:
             raise RuntimeError(f"No Cap module for model {model}. Available: {list(caps)}")
-        w, l = self.use_defaults(params, mod.name, default_cap_size)
+        w, l = self._sizes(params, mod.name, default_cap_size)
         modcall = mod(Gf180CapParams(c_width=w, c_length=l))
         CACHE.cap_modcalls[params] = modcall
         return modcall
@@ -347,10 +345,15 @@ class Gf180Walker(h.HierarchyWalker):
             return h.Literal(f"({orig.text} * {default.number}e{default.prefix.value})")
         raise TypeError(f"Param Value {orig}")
 
-    def use_defaults(
+    def use_defaults(self, params: h.paramclass, modname: str) -> tuple[h.Scalar, h.Scalar]:
+        """A MOS's width and length, unitless values scaled by the model's defaults
+        (``default_xtor_size``)."""
+        return self._sizes(params, modname, default_xtor_size)
+
+    def _sizes(
         self, params: h.paramclass, modname: str, defaults: dict[str, tuple[h.Prefixed, h.Prefixed]]
     ) -> tuple[h.Scalar, h.Scalar]:
-        """Width and length, unitless values scaled by the model's defaults."""
+        """Width and length, unitless values scaled by the model's ``defaults``."""
         w0, l0 = defaults.get(modname) or next(iter(defaults.values()))
         w = self.scale_param(getattr(params, "w", None), w0)
         l = self.scale_param(getattr(params, "l", None), l0)
