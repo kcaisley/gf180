@@ -18,15 +18,16 @@ nm, cell frame R0 (VSS at the bottom), from `tech.py`:
 
 | | NMOS | PMOS |
 | --- | --- | --- |
-| diffusion (`OD_LIMIT`) | 850..3500 | 2800..5310 |
+| diffusion (`OD_LIMIT`) | 920..3500 | 2800..5310 |
 | gate bar and its M2 track (`GATE_TRACK`) | 3780 | 2520 |
 | S/D M2 tracks (`SD_TRACKS`) | 1260 1890 2520 3150 | 3150 3780 4410 5040 |
-| device implant (`DEV_IMP`) | Nplus 600..5700 | Pplus 600..5700 |
+| device implant (`DEV_IMP`) | Nplus 680..5620 | Pplus 680..5620 |
+| rail taps (`TAP_Y`, `TAP_OD`) | 150..600 above VSS | 150..600 below VDD |
 | N-well (`NW_N`, `NW_P`, `NW_TOP`) | 3930..6730 | 2370..6730 |
 
 Row height `H` = 6300, M2 track pitch `PITCH` = 630 (ten tracks a row), placement grid `XPITCH` =
 600, rail half width `RAIL` = 600, widest finger `W_MAX` = 2230 (ten 220 nm units; the bands hold
-2650 / 2510), diffusion to the cell edge `EDGE` = 430; MOS models nfet_3v3 / pfet_3v3 (the decks'
+2580 / 2510), diffusion to the cell edge `EDGE` = 430; MOS models nfet_3v3 / pfet_3v3 (the decks'
 nfet_03v3 / pfet_03v3, L >= 280).
 
 ## Notes
@@ -34,13 +35,17 @@ nfet_03v3 / pfet_03v3, L >= 280).
 - The rules are the 3.3 V devices' (`_LV`): 0.43 um from a diffusion to the other type's well
   (DF.4c_LV, DF.16_LV) sets `EDGE`, 0.1 um from field poly to a diffusion (PL.5a_LV) and 0.17 um
   from a gate contact (CO.8) the room between a diffusion and its gate bar, 0.23 um of implant past
-  a gate (NP.5a, PP.5a) the diffusion's ends against the rail bands.
+  a gate (NP.5a, PP.5a) the PMOS diffusion's end against the VDD band; the NMOS diffusion starts
+  0.32 um from the VSS tap (its poly end 0.1 um from it, PL.5a_LV).
 - The library's rails lie inside its cells (M1 0..0.6 um from either edge, a tap under each: P+
   under VSS, N+ under VDD); rows alternate R0 / MX, so where two rows meet the rail is 1.2 um, as
   the row cells draw it (`RAIL` 600 about the line, `RAIL_OD`, `RAIL_TAPS`): every cell ties its
-  wells, no tie cell at the row ends. The rail bands' implants are the library's (Pplus 0.6 um
-  about VSS, Nplus from 0.6 um below VDD); deeper, a row cell's Nplus band would cover the
-  library's Pplus beside its PMOS gates across the rail (NP.12).
+  wells, no tie cell at the row ends. The taps lie inside each cell as the library's, 0.375 um
+  from the rail line (`TAP_Y`: diffusion 0.15 to 0.6 um, contacts 0.265 to 0.485 um), so a row
+  cell's and a library cell's across a rail keep CO.2a and DF.3a_LV. The rail bands' implants are
+  the library's (Pplus 0.68 um about VSS, Nplus from 0.68 um below VDD, 0.08 past the taps: NP.3cii,
+  PP.3ci); deeper, a row cell's Nplus band would cover the library's Pplus beside its PMOS gates
+  across the rail (NP.12).
 - The library's N-well starts at 3.2 um (`STD_NW`); the row cells' VDD band overhangs 0.43 um
   past them and 0.43 um into the next row, enclosing the VDD tap (DF.4d_LV), as the kit's copy of
   the library's cells now does too.
@@ -56,9 +61,6 @@ nfet_03v3 / pfet_03v3, L >= 280).
   the well to `NW_TOP`; the Pplus islands at its PMOS gate ends run over the poly ends, NP.12), so
   cells, fillers, mirrored neighbours, the wrappers' pads (`ISO_PAD`) and row cells all meet
   implant edge to edge.
-- The library's taps sit inside its cells (contacts 0.265 to 0.485 um from the rail line), the
-  row cells' on the line: across a rail the two come 0.155 um apart (CO.2a), which the row engine
-  cannot avoid without a tap offset.
 - Cell widths are on a 0.1 um grid; fillers (0.3 um and up) pad them to the 0.6 um placement grid
   (`STD_PAD`); cells off the 0.3 um grid (buf_1, or2_1) cannot be padded.
 - The poly resistor is ppolyf_u (350 ohm/sq, 0.8 um wide, `RES`): SAB, RES_MK and Pplus as the

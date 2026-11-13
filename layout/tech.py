@@ -84,13 +84,17 @@ H = 6300  # row height; rails at 0 (VSS) and H (VDD)
 PITCH = 630
 XPITCH = 600  # M3 track pitch and cell width grid (x): two of the library's 0.3 um fillers
 RAIL = 600  # M1 rail half width: the library's 0.6 um rail inside each of the two rows that meet
-TAP_OD = 225  # rail tap diffusion half height (the library's tap is 0.45 um under its rail)
+# rail taps as the library's, inside each cell under its own half of the rail: the diffusion 0.15 to
+# 0.6 um from the rail line, the contacts 0.265 to 0.485 (a row cell's across a rail from a library
+# cell keeps CO.2a to its contacts, and its diffusion DF.3a_LV)
+TAP_Y = 375  # the taps' centre inside the cell from the rail line
+TAP_OD = 225  # rail tap diffusion half height (the library's tap is 0.45 um tall)
 TAP_PITCH = 600  # tap contacts at x = TAP_PITCH / 2 + k * TAP_PITCH
-# the rail implant bands as the library's (its cells' full-width bands, which the kit's copy completes,
-# openroad/views.py): Pplus 0.6 about VSS, Nplus from 0.6 below VDD; deeper, a row cell's band would
-# cover the library's Pplus islands at its PMOS gates across the rail (NP.12)
-PP_TAP = 600  # VSS rail implant band half height (Pplus; 0.375 past the tap: PP.5b)
-NP_TAP = 5700  # VDD rail implant band bottom (Nplus; top 2 H - NP_TAP)
+# the rail implant bands as the library's (its cells' full-width bands, which the kit's copy
+# completes, openroad/views.py): Pplus to 0.68 um about VSS, Nplus from 0.68 below VDD, 0.08 past
+# the taps (NP.3cii, PP.3ci: the other implant 0.08 from a tap)
+PP_TAP = 680  # VSS rail implant band half height (Pplus)
+NP_TAP = 5620  # VDD rail implant band bottom (Nplus; top 2 H - NP_TAP)
 # device implants from one rail band to the other: Nplus over an NMOS cell, Pplus over a PMOS cell;
 # they enclose the gates by 0.23 (NP.5a, PP.5a) and the diffusion by 0.16 (NP.5b, PP.5b)
 DEV_IMP = {"n": (PP_TAP, NP_TAP), "p": (PP_TAP, NP_TAP)}
@@ -128,14 +132,15 @@ EDGE_CUTS, EDGE_PAD = 1, (260, 140)  # row-end supply stack: one via per rail, M
 GATE_TRACK = {"n": 3780, "p": 2520}  # gate bar and its M2 track (symmetric about the row's middle)
 # S/D tracks: a strip's M1 keeps M1.2a to the rail and to the gate pads
 SD_TRACKS = {"n": (1260, 1890, 2520, 3150), "p": (3150, 3780, 4410, 5040)}
-# NMOS: 0.23 inside its Nplus (NP.5a) above the VSS band, its first contact's M1 0.23 from the rail
-# (M1.2a); the poly bar 0.1 from the diffusion (PL.5a_LV), the gate contact 0.17 (CO.8), below the
-# gate track; PMOS: 0.23 inside its Pplus below the VDD band (PP.5a), mirrored about the gate track
-OD_LIMIT = {"n": (850, 3500), "p": (2800, 5310)}  # (OD start at the rail side, furthest OD edge)
+# NMOS: its poly end 0.1 from the VSS tap (PL.5a_LV: 0.32 from the tap's diffusion, DF.3a_LV;
+# 0.24 inside its Nplus, NP.5a), its first contact's M1 0.23 from the rail (M1.2a); the poly bar 0.1
+# from the diffusion (PL.5a_LV), the gate contact 0.17 (CO.8), below the gate track; PMOS: 0.31
+# inside its Pplus below the VDD band (PP.5a), mirrored about the gate track
+OD_LIMIT = {"n": (920, 3500), "p": (2800, 5310)}  # (OD start at the rail side, furthest OD edge)
 # the complementary row cells' diffusion bands (rowcell.inverter), split at the library's well
 # (STD_NW, 0.43 each way): the NMOS's (lowest bottom, top), the PMOS's (bottom, highest top)
-LOGIC_OD = {"n": (850, 2770), "p": (3630, 5310)}
-W_MAX = 2230  # widest finger: ten 0.22 um units (MOS_FINGER_UNITS); the bands hold 2.65 / 2.51 um
+LOGIC_OD = {"n": (920, 2770), "p": (3630, 5310)}
+W_MAX = 2230  # widest finger: ten 0.22 um units (MOS_FINGER_UNITS); the bands hold 2.58 / 2.51 um
 EDGE = 430  # OD to the cell edge: DF.4c_LV / DF.16_LV against any neighbour's well
 OD_GAP = 280  # diffusion break between a pair's devices that share no strip (DF.3a_LV)
 GATE_GAP = 660  # gate to gate across a shared strip when the gates differ (their M2 bars, Mn.2a)
