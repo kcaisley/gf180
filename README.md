@@ -75,7 +75,7 @@ related to QN).
   runs until its `GDSCHECK_PROCESSES` names gf180mcuD) and the open PDK's KLayout deck without
   density (`klayout/drc.py`). LVS: the open PDK's KLayout deck
   (`klayout/lvs.py`). Extraction: KLayout-PEX by FasterCap on `kpex/stack.json` (its 2.5-D
-  coefficients in `kpex/parasitics.json`, kpex's own gf180mcuD ones).
+  coefficients in `kpex/parasitics.json`, fitted to 2-D field solves in that stack).
 
 ## Contents
 
