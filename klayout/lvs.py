@@ -4,7 +4,9 @@
 
 The deck pairs the top cells by name: the source's top subcircuit is renamed to the layout's. It
 runs as the deck's own ``run_lvs.py --variant=D --combine --top_lvl_pins`` does (its switches
-given to KLayout here, without the script's docopt dependency).
+given to KLayout here, without the script's docopt dependency), from a copy that joins each
+supply's labelled pieces by name (frida's ``flow.layout.klayout_lvs.joined_deck``): a block's rail
+lines are pins of their own, which the converter's power grid joins.
 
 The deck: ``$GF180_OPEN_PDK`` (default ~/Documents/libs/gf180mcu-open-pdk)/gf180mcuD/libs.tech/klayout/tech/lvs.
 """
@@ -64,7 +66,9 @@ def lvs(gds: Path, top: str, source: Path, source_top: str, run_dir: Path) -> tu
         "report": str(run_dir / f"{stem}.lvsdb"),
         "target_netlist": str(run_dir / f"{stem}.cir"),
     }
-    cmd = ["klayout", "-b", "-r", str(DECK / "gf180mcu.lvs")]
+    from flow.layout.klayout_lvs import joined_deck
+
+    cmd = ["klayout", "-b", "-r", str(joined_deck(DECK / "gf180mcu.lvs", run_dir / "gf180mcu.lvs"))]
     for key, value in switches.items():
         cmd += ["-rd", f"{key}={value}"]
     from flow.logs import run_logged
