@@ -117,6 +117,9 @@ STD_CELLS = (
 STD_SUPPLY = ("VDD", "VSS")  # supply pin names, VDD rail on top
 STD_FILL, STD_FILL_W = "gf180mcu_osu_sc_gp9t3v3__fill_1", 300  # the narrowest filler
 STD_FILLS = tuple((f"gf180mcu_osu_sc_gp9t3v3__fill_{n}", 300 * n) for n in (1, 2, 4, 8, 16))
+# the library's decoupling capacitors, widest first: the cells a top level's filler pass
+# places in a row's gaps before its fillers (OpenROAD's LEF cannot tell a decap from a filler)
+STD_DECAPS = ('gf180mcu_osu_sc_gp9t3v3__decap_1',)
 STD_PAD = 600  # cells padded to a multiple of the placement grid (their widths are 0.1 um multiples)
 STD_TEXT_LAYERS: set[int] = set()  # the library's labels (on COMP and Metal2_Label): netcells drops all text
 # pin access tracks, preferred first (middle of the cell): the library's pins are M2 pads, each a
