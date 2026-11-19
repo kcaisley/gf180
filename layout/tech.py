@@ -199,3 +199,15 @@ RES = {
     "bulk": True,  # the model's third terminal, the substrate
     "sim_model": "ppolyf_u_lw",  # the package's wrapper taking the body's l and w (hdl21/spectre_devices.scs, hdl21/ngspice_devices.spice)
 }
+
+# capdac's drivers (flow.capdac.subckt._drive_r_ohm): the kit's settling time constants over the
+# model's (its tables' on- and switching resistances, its FO4 delay), from capdac frida1 at the
+# typical corner (2026-11-19, run 20261119_003037): at 1 it settled in 547 ps pre-layout and 625 ps
+# post-layout (KLayout-PEX 2.5-D; its MSB 625 ps), so the post-layout over the 500 ps target
+DRIVER_TAU_SCALE = 1.43
+# (2026-11-19, run 20261119_012549: at 1.25 its MSB settled post-layout in 573 ps, so 1.25 times that over 500 ps)
+
+# capdac's drivers: each plate's wiring from its driver to its landing (F), the load the
+# momcap table leaves out; from capdac frida1's extraction (run 20261119_012549), the
+# difference plates' extracted capacitance against the model's, the intercept of a line fit
+DRIVER_ROUTE_F = 2.6e-15
