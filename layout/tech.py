@@ -75,6 +75,12 @@ RULES = {
     # from a neighbour's COMP and poly (PRES.3, PRES.4); PL.3a is 0.24
     "PO": {"width": 200, "space": 1400},
 }
+
+# the metals a block's pins land on, lowest first (frida's flow.layout.pins: each landing on the
+# lowest of them its route keeps clear of the block's other nets): the metals above the rows'
+# routing (M1 to M3), the top one last, whose pitch takes the converter's double-width routes
+PIN_METALS = (4, 5)
+
 NW_SPACE = 600  # NW.2a_LV: N-well space, narrower gaps are closed
 
 # ---- the standard-cell row
