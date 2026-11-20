@@ -214,8 +214,12 @@ RES = {
 # model's (its tables' on- and switching resistances, its FO4 delay), from capdac frida1 at the
 # typical corner (2026-11-19, run 20261119_003037): at 1 it settled in 547 ps pre-layout and 625 ps
 # post-layout (KLayout-PEX 2.5-D; its MSB 625 ps), so the post-layout over the 500 ps target
-DRIVER_TAU_SCALE = 1.43
-# (2026-11-19, run 20261119_012549: at 1.25 its MSB settled post-layout in 573 ps, so 1.25 times that over 500 ps)
+# (2026-11-19, run 20261119_012549: at 1.25 its MSB settled post-layout in 573 ps, so 1.25 times that
+# over 500 ps); with its main plates sensed (2026-11-20, run 20261120_231204), at 1.43 its MSB's
+# load (its sense inverter's input more) took a chain of four inverters, two FO4 delays more than
+# two, and settled post-layout in 661 ps: at 1.35 its chain is two again (at 1.37 too; at 1.40 and,
+# the capacitors' arrangement moving with the drivers' widths, at 1.30 four)
+DRIVER_TAU_SCALE = 1.35
 
 # capdac's drivers: each plate's wiring from its driver to its landing (F), the load the
 # momcap table leaves out; from capdac frida1's extraction (run 20261119_012549), the
