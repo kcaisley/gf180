@@ -218,8 +218,14 @@ RES = {
 # over 500 ps); with its main plates sensed (2026-11-20, run 20261120_231204), at 1.43 its MSB's
 # load (its sense inverter's input more) took a chain of four inverters, two FO4 delays more than
 # two, and settled post-layout in 661 ps: at 1.35 its chain is two again (at 1.37 too; at 1.40 and,
-# the capacitors' arrangement moving with the drivers' widths, at 1.30 four)
-DRIVER_TAU_SCALE = 1.35
+# the capacitors' arrangement moving with the drivers' widths, at 1.30 four). On frida's 68acaf07
+# (capdac's chain counted as the request drawn at its on-resistance draws it) its MSB's chain is four
+# at every scale from 1.20 to 2.40: at 1.35 it settled post-layout in 634 ps (run 20261124_183424),
+# at 1.80 in 568 ps (run 20261124_185437), at 2 in 537 ps (its MSB, its chain's delay 340 ps; 422 ps
+# pre-layout; run 20261124_191135), the outline 42.86 x 70.66 um from 39.26 x 76.96 um, 0.2 % more
+# area; at 1.90, 2.10, 2.15 and 2.20 its drivers and arrangement never stand still (capdac's
+# _SizingError)
+DRIVER_TAU_SCALE = 2.00
 
 # capdac's drivers: each plate's wiring from its driver to its landing (F), the load the
 # momcap table leaves out; from capdac frida1's extraction (run 20261119_012549), the
